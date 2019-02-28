@@ -6,7 +6,7 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
