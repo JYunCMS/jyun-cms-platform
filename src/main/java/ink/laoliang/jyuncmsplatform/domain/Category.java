@@ -32,7 +32,7 @@ public class Category extends _BaseEntity {
     @Column(nullable = false)
     private Integer childrenCount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "bigint unsigned")
     private Integer articleCount;
 
     @Column(columnDefinition = "longtext")

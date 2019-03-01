@@ -12,6 +12,8 @@ public interface CategoryService {
 
     List<Category> updateCategory(Category category) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException;
 
+    List<Category> deleteCategory(String urlAlias);
+
     Category getCategoryById(String urlAlias);
 
     Integer getCountByLevelAndParentUrlAlias(Integer nodeLevel, String parentUrlAlias);
@@ -19,6 +21,4 @@ public interface CategoryService {
     List<Category> moveUpNode(String urlAlias);
 
     List<Category> moveDownNode(String urlAlias);
-
-    void deleteCategory(String urlAlias);
 }

@@ -31,8 +31,8 @@ public class CategoryController {
     }
 
     @DeleteMapping
-    public void deleteCategory(@RequestParam String urlAlias) {
-        categoryService.deleteCategory(urlAlias);
+    public List<Category> deleteCategory(@RequestParam String urlAlias) {
+        return categoryService.deleteCategory(urlAlias);
     }
 
     @GetMapping(value = "/categoryById")

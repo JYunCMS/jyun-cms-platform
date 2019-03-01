@@ -15,10 +15,10 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
+    private Sort ORDER_BY_SEQUENCE = new Sort(Sort.Direction.ASC, "sequence");
+
     @Autowired
     private CategoryRepository categoryRepository;
-
-    private Sort ORDER_BY_SEQUENCE = new Sort(Sort.Direction.ASC, "sequence");
 
     @Override
     public List<Category> getCategories() {
@@ -50,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(String urlAlias) {
+    public List<Category> deleteCategory(String urlAlias) {
         Category category = categoryRepository.getOne(urlAlias);
 
         // 是否是叶子节点
@@ -79,6 +79,8 @@ public class CategoryServiceImpl implements CategoryService {
             // 刷新所有节点文章数
             ////////////////////
         }
+
+        return categoryRepository.findAll(ORDER_BY_SEQUENCE);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         for (Category childrenCategory : childrenCategoryList) {
             categoryRepository.delete(childrenCategory);
-            if (childrenCategory.getBeLeaf() == false) {
+            if (!childrenCategory.getBeLeaf()) {
                 deleteAllSubNode(childrenCategory);
             }
         }
