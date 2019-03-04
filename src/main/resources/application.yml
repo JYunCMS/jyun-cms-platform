@@ -11,7 +11,17 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  resources:
+    static-locations: file:${upload.dir}
+  mvc:
+    static-path-pattern: /${upload.dir}/**
 server:
   port: 8080
   servlet:
     context-path: /
+upload:
+  dir: upload_dir

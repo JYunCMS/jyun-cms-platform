@@ -15,6 +15,8 @@ public class Article extends _BaseEntity {
 
     private String[] tags;
 
+    private String[] resources;
+
     public Article() {
     }
 
@@ -32,5 +34,13 @@ public class Article extends _BaseEntity {
 
     public void setTags(String[] tags) {
         this.tags = tags;
+    }
+
+    public String[] getResources() {
+        return resources;
+    }
+
+    public void setResources(String[] resources) {
+        this.resources = resources;
     }
 }

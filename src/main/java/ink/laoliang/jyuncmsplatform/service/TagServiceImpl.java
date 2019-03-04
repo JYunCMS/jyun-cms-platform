@@ -36,7 +36,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public List<Tag> createTag(Tag tag) {
         if (tagRepository.existsById(tag.getName())) {
-            throw new IllegalParameterException("【标签】已存在！");
+            throw new IllegalParameterException("【非法参数异常】- 标签 " + tag.getName() + " 已存在！");
         }
 
         tagRepository.save(tag);
@@ -52,7 +52,7 @@ public class TagServiceImpl implements TagService {
                 Article article = articleRepository.getOne(articleTag.getArticleId());
                 List<String> tags = Arrays.asList(article.getTags());
                 if (!tags.remove(name)) {
-                    throw new IllegalParameterException("【参数不存在】- 标签 " + name + " 不存在");
+                    throw new IllegalParameterException("【非法参数异常】- 标签 " + name + " 不存在！");
                 }
                 article.setTags(tags.toArray(new String[tags.size()]));
                 articleRepository.save(article);
