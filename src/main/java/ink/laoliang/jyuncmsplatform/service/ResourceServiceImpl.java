@@ -1,6 +1,7 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Resource;
+import ink.laoliang.jyuncmsplatform.domain.response.FilterConditions;
 import ink.laoliang.jyuncmsplatform.exception.ResourceStorageException;
 import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +13,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -31,9 +35,22 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourceRepository resourceRepository;
 
     @Override
+    public List<Resource> getResources() {
+        return resourceRepository.findAll(ORDER_BY_CREATED_AT);
+    }
+
+    @Override
     public Resource upload(MultipartFile file) {
         // 原始文件名
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+
+        if (file.isEmpty()) {
+            throw new ResourceStorageException("【资源存储异常】- 无法存储空文件！");
+        }
+        if (originalFilename.contains("..")) {
+            throw new ResourceStorageException("【资源存储异常】- 无法存储当前目录外的相对路径的文件！");
+        }
+
         Calendar now = Calendar.getInstance();
         // 文件后缀名
         String suffixName = "";
@@ -48,13 +65,8 @@ public class ResourceServiceImpl implements ResourceService {
         Path targetFilePath = uploadPath.resolve(storageFilename);
         // 文件类型
         String fileType = handleFileTypeField(file.getContentType());
-
-        if (file.isEmpty()) {
-            throw new ResourceStorageException("【资源存储异常】- 无法存储空文件 " + originalFilename + " !");
-        }
-        if (originalFilename.contains("..")) {
-            throw new ResourceStorageException("【资源存储异常】- 无法存储当前目录外的相对路径的文件 " + originalFilename + " !");
-        }
+        // 文件大小
+        String fileSize = handleFileSizeField(file.getSize());
 
         try {
             // 创建文件夹（如果已存在则直接返回）
@@ -64,19 +76,88 @@ public class ResourceServiceImpl implements ResourceService {
             // 上传文件
             Files.copy(inputStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new ResourceStorageException("【资源存储异常】- 无法存储文件 " + originalFilename + " !", e);
+            throw new ResourceStorageException("【资源存储异常】- 无法存储文件！", e);
         }
 
         // 存库，数据库标识
-        return resourceRepository.save(new Resource(targetFilePath.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, 0));
+        return resourceRepository.save(new Resource(targetFilePath.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 0));
     }
 
     @Override
-    public List<Resource> getResources() {
+    public List<Resource> deleteResource(String filePath) {
+        // 删库（资源在库中的对应标记行）
+        resourceRepository.deleteById(filePath);
+
+        // 删除磁盘上对应文件
+        try {
+            Files.delete(Paths.get(filePath));
+        } catch (NoSuchFileException e) {
+            // 文件删除失败，磁盘上已经没有该文件！（已知的异常，上面已经删了库，这里直接返回即可）
+            return resourceRepository.findAll(ORDER_BY_CREATED_AT);
+        } catch (IOException e) {
+            throw new ResourceStorageException("【资源存储异常】- 文件删除失败！", e);
+        }
+
         return resourceRepository.findAll(ORDER_BY_CREATED_AT);
     }
 
+    @Override
+    public FilterConditions getFilterConditions() {
+        Path uploadDir = Paths.get(UPLOAD_DIR);
+        List<String> dateList = new ArrayList<>();
+        try {
+            // 创建文件夹，防止资源文件夹不存在（如果已存在则直接返回）
+            Files.createDirectories(uploadDir);
+            Files.walkFileTree(uploadDir, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if (dir != uploadDir) {
+                        dateList.add(dir.getFileName().toString());
+                    }
+                    return super.preVisitDirectory(dir, attrs);
+                }
+            });
+        } catch (IOException e) {
+            throw new ResourceStorageException("【资源存储异常】- 资源文件夹 " + uploadDir + " 下日期分类列表获取失败！", e);
+        }
+
+        return new FilterConditions(dateList, resourceRepository.getFileTypes());
+    }
+
+    @Override
+    public List<Resource> getByConditions(String date, String type) {
+        DateFormat format = new SimpleDateFormat("yyyy-MM");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2000, 00, 01); // 2000-01-01
+        Date startDate = calendar.getTime();
+        calendar.set(2099, 11, 31); // 2099-12-31
+        Date endDate = calendar.getTime();
+        String fileType = "%";
+
+        if (date != null && !date.equals("") && !date.equals("null")) {
+            try {
+                startDate = format.parse(date);
+                calendar.setTime(startDate);
+                calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+                calendar.add(Calendar.DATE, 1);
+                endDate = calendar.getTime();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (type != null && !type.equals("") && !type.equals("null")) {
+            fileType = type;
+        }
+
+        return resourceRepository.findAllByConditions(startDate, endDate, fileType);
+    }
+
     private String handleFileTypeField(String MIMEType) {
+        if (MIMEType == null) {
+            return "未知类型资源";
+        }
+
         switch (MIMEType.split("/")[0]) {
             case "text":
                 return "文本";
@@ -108,5 +189,36 @@ public class ResourceServiceImpl implements ResourceService {
             default:
                 return "未知类型资源";
         }
+    }
+
+    private String handleFileSizeField(long byteSize) {
+        long KBSize = byteSize / 1024;
+        if (KBSize < 1) {
+            return byteSize + " Byte";
+        }
+
+        long MBSize = byteSize / (1024 * 1024);
+        if (MBSize < 1) {
+            String pointNumber = "." + byteSize % 1024;
+            if (pointNumber.length() > 3) {
+                pointNumber = pointNumber.substring(0, 3);
+            }
+            return KBSize + pointNumber + " KB";
+        }
+
+        long GBSize = byteSize / (1024 * 1024 * 1024);
+        if (GBSize < 1) {
+            String pointNumber = "." + byteSize % (1024 * 1024);
+            if (pointNumber.length() > 3) {
+                pointNumber = pointNumber.substring(0, 3);
+            }
+            return MBSize + pointNumber + " MB";
+        }
+
+        String pointNumber = "." + byteSize % (1024 * 1024 * 1024);
+        if (pointNumber.length() > 3) {
+            pointNumber = pointNumber.substring(0, 3);
+        }
+        return GBSize + pointNumber + " GB";
     }
 }

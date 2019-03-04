@@ -5,7 +5,6 @@ import ink.laoliang.jyuncmsplatform.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @RestController
@@ -26,7 +25,7 @@ public class CategoryController {
     }
 
     @PutMapping
-    public List<Category> updateCategory(@RequestBody Category category) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public List<Category> updateCategory(@RequestBody Category category) {
         return categoryService.updateCategory(category);
     }
 

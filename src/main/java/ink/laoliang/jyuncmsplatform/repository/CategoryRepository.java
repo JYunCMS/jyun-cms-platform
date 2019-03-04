@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, String> {
+
     Integer countByNodeLevelAndParentNodeUrlAlias(Integer nodeLevel, String parentUrlAlias);
 
     Category findByParentNodeUrlAliasAndSequence(String parentNodeUrlAlias, Integer sequence);

@@ -1,6 +1,7 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Category;
+import ink.laoliang.jyuncmsplatform.exception.CategoryUpdateException;
 import ink.laoliang.jyuncmsplatform.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -32,19 +33,24 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> updateCategory(Category category) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public List<Category> updateCategory(Category category) {
         Category categoryModel = categoryRepository.getOne(category.getUrlAlias());
 
-        // 遍历传入的 category，将不空的（欲更新的）字段更新到 categoryModel 并存库
-        for (Field field : category.getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            if (field.get(category) != null) {
-                String methodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
-                Class<?> methodParameterType = field.get(category).getClass();
-                Method method = categoryModel.getClass().getMethod(methodName, methodParameterType);
-                method.invoke(categoryModel, field.get(category));
+        try {
+            // 遍历传入的 category，将不空的（欲更新的）字段更新到 categoryModel 并存库
+            for (Field field : category.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.get(category) != null) {
+                    String methodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+                    Class<?> methodParameterType = field.get(category).getClass();
+                    Method method = categoryModel.getClass().getMethod(methodName, methodParameterType);
+                    method.invoke(categoryModel, field.get(category));
+                }
             }
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new CategoryUpdateException("【分类更新异常】", e);
         }
+
         categoryRepository.save(categoryModel);
         return categoryRepository.findAll(ORDER_BY_SEQUENCE);
     }

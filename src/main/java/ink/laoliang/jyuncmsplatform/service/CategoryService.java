@@ -2,7 +2,6 @@ package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Category;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public interface CategoryService {
@@ -10,7 +9,7 @@ public interface CategoryService {
 
     List<Category> createCategory(Category category);
 
-    List<Category> updateCategory(Category category) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException;
+    List<Category> updateCategory(Category category);
 
     List<Category> deleteCategory(String urlAlias);
 
