@@ -31,8 +31,12 @@ public class ResourceServiceImpl implements ResourceService {
     @Value("${upload.dir}")
     private String UPLOAD_DIR;
 
+    private final ResourceRepository resourceRepository;
+
     @Autowired
-    private ResourceRepository resourceRepository;
+    public ResourceServiceImpl(ResourceRepository resourceRepository) {
+        this.resourceRepository = resourceRepository;
+    }
 
     @Override
     public List<Resource> getResources() {

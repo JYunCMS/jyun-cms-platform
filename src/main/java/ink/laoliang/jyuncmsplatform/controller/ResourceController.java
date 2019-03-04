@@ -13,8 +13,12 @@ import java.util.List;
 @RequestMapping(value = "/resources")
 public class ResourceController {
 
+    private final ResourceService resourceService;
+
     @Autowired
-    private ResourceService resourceService;
+    public ResourceController(ResourceService resourceService) {
+        this.resourceService = resourceService;
+    }
 
     @GetMapping
     public List<Resource> getResources() {

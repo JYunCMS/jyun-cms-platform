@@ -13,9 +13,9 @@ public interface CategoryService {
 
     List<Category> deleteCategory(String urlAlias);
 
-    Category getCategoryById(String urlAlias);
+    Category getCategory(String urlAlias);
 
-    Integer getCountByLevelAndParentUrlAlias(Integer nodeLevel, String parentUrlAlias);
+    Integer getCount(Integer nodeLevel, String parentUrlAlias);
 
     List<Category> moveUpNode(String urlAlias);
 

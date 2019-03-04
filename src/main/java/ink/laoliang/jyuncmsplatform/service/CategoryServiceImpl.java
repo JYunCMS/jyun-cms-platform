@@ -18,8 +18,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Sort ORDER_BY_SEQUENCE = new Sort(Sort.Direction.ASC, "sequence");
 
+    private final CategoryRepository categoryRepository;
+
     @Autowired
-    private CategoryRepository categoryRepository;
+    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
 
     @Override
     public List<Category> getCategories() {
@@ -90,12 +94,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category getCategoryById(String urlAlias) {
+    public Category getCategory(String urlAlias) {
         return categoryRepository.getOne(urlAlias);
     }
 
     @Override
-    public Integer getCountByLevelAndParentUrlAlias(Integer nodeLevel, String parentUrlAlias) {
+    public Integer getCount(Integer nodeLevel, String parentUrlAlias) {
         return categoryRepository.countByNodeLevelAndParentNodeUrlAlias(nodeLevel, parentUrlAlias);
     }
 

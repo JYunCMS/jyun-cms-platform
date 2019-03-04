@@ -11,8 +11,12 @@ import java.util.List;
 @RequestMapping(value = "/categories")
 public class CategoryController {
 
+    private final CategoryService categoryService;
+
     @Autowired
-    private CategoryService categoryService;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @GetMapping
     public List<Category> getCategories() {
@@ -34,23 +38,23 @@ public class CategoryController {
         return categoryService.deleteCategory(urlAlias);
     }
 
-    @GetMapping(value = "/categoryById")
-    public Category getCategoryById(@RequestParam String urlAlias) {
-        return categoryService.getCategoryById(urlAlias);
+    @GetMapping(value = "/category")
+    public Category getCategory(@RequestParam String urlAlias) {
+        return categoryService.getCategory(urlAlias);
     }
 
-    @GetMapping(value = "/countByLevelAndParentUrlAlias")
-    public Integer getCountByLevel(@RequestParam Integer nodeLevel,
-                                   @RequestParam String parentUrlAlias) {
-        return categoryService.getCountByLevelAndParentUrlAlias(nodeLevel, parentUrlAlias);
+    @GetMapping(value = "/count")
+    public Integer getCount(@RequestParam Integer nodeLevel,
+                            @RequestParam String parentUrlAlias) {
+        return categoryService.getCount(nodeLevel, parentUrlAlias);
     }
 
-    @PatchMapping(value = "/moveUpNode")
+    @PatchMapping(value = "/move-up-node")
     public List<Category> moveUpNode(@RequestParam String urlAlias) {
         return categoryService.moveUpNode(urlAlias);
     }
 
-    @PatchMapping(value = "/moveDownNode")
+    @PatchMapping(value = "/move-down-node")
     public List<Category> moveDownNode(@RequestParam String urlAlias) {
         return categoryService.moveDownNode(urlAlias);
     }
