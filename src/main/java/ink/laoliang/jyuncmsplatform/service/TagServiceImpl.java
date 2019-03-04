@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class TagServiceImpl implements TagService {
 
-    private Sort ORDER_BY_CREATED_AT = new Sort(Sort.Direction.DESC, "createdAt");
+    private final Sort ORDER_BY_CREATED_AT = new Sort(Sort.Direction.DESC, "createdAt");
 
     @Autowired
     private TagRepository tagRepository;

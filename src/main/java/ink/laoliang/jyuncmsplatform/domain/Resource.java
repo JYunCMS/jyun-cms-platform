@@ -19,16 +19,20 @@ public class Resource extends _BaseEntity {
     @Column(nullable = false)
     private String storageFilename;
 
+    @Column(nullable = false)
+    private String fileType;
+
     @Column(nullable = false, columnDefinition = "bigint unsigned")
     private Integer referenceCount;
 
     public Resource() {
     }
 
-    public Resource(String filePath, String originalFilename, String storageFilename, Integer referenceCount) {
+    public Resource(String filePath, String originalFilename, String storageFilename, String fileType, Integer referenceCount) {
         this.filePath = filePath;
         this.originalFilename = originalFilename;
         this.storageFilename = storageFilename;
+        this.fileType = fileType;
         this.referenceCount = referenceCount;
     }
 
@@ -54,6 +58,14 @@ public class Resource extends _BaseEntity {
 
     public void setStorageFilename(String storageFilename) {
         this.storageFilename = storageFilename;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
     }
 
     public Integer getReferenceCount() {
