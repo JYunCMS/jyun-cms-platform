@@ -5,10 +5,11 @@ import org.springframework.stereotype.Component;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Entity
 @Component
-public class Resource extends _BaseEntity {
+public class Resource extends _BaseEntity implements Serializable {
 
     @Id
     private String filePath;

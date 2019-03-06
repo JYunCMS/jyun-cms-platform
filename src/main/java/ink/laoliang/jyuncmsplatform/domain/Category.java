@@ -6,11 +6,12 @@ import org.springframework.stereotype.Component;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Entity
 @Component
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
-public class Category extends _BaseEntity {
+public class Category extends _BaseEntity implements Serializable {
 
     @Id
     private String urlAlias;
