@@ -1,5 +1,6 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
+import ink.laoliang.jyuncmsplatform.domain.ArticleTag;
 import ink.laoliang.jyuncmsplatform.domain.Tag;
 import ink.laoliang.jyuncmsplatform.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +29,18 @@ public class TagController {
         return tagService.createTag(tag);
     }
 
+    @PutMapping
+    public Tag updateTag(@RequestBody Tag tag){
+        return tagService.updateTag(tag);
+    }
+
     @DeleteMapping
     public List<Tag> deleteTag(@RequestParam String name) {
         return tagService.deleteTag(name);
+    }
+
+    @PostMapping(value = "/article-bind")
+    public ArticleTag addArticleBind(@RequestBody ArticleTag articleTag){
+        return tagService.addArticleBind(articleTag);
     }
 }

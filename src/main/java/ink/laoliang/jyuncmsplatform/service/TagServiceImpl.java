@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,26 +49,35 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    public Tag updateTag(Tag tag) {
+        return tagRepository.save(tag);
+    }
+
+    @Override
     public List<Tag> deleteTag(String name) {
         List<ArticleTag> articleTagList = articleTagRepository.findAllByTagName(name);
         if (articleTagList != null && articleTagList.size() != 0) {
             for (ArticleTag articleTag : articleTagList) {
                 // 更新文章 tags 字段
                 Article article = articleRepository.getOne(articleTag.getArticleId());
-                List<String> tags = Arrays.asList(article.getTags());
-                if (!tags.remove(name)) {
-                    throw new IllegalParameterException("【非法参数异常】- 标签 " + name + " 不存在！");
-                }
+                List<String> tempTags = Arrays.asList(article.getTags());
+                List<String> tags = new ArrayList(tempTags);
+                tags.remove(name);
                 article.setTags(tags.toArray(new String[0]));
                 articleRepository.save(article);
 
                 // 删除 article_tag 表对应行
-                articleTagRepository.deleteByArticleIdAndTagName(articleTag.getArticleId(), name);
+                articleTagRepository.deleteArticleTagByArticleIdAndTagName(articleTag.getArticleId(), name);
             }
         }
 
         // 删除标签
         tagRepository.deleteById(name);
         return tagRepository.findAll(ORDER_BY_CREATED_AT);
+    }
+
+    @Override
+    public ArticleTag addArticleBind(ArticleTag articleTag) {
+        return articleTagRepository.save(articleTag);
     }
 }

@@ -24,10 +24,12 @@ public class Article extends _BaseEntity {
     @Column(columnDefinition = "longtext")
     private String content;
 
+    @Column(columnDefinition = "blob")
     private Category category;
 
     private String[] tags;
 
+    @Column(columnDefinition = "blob")
     private Resource[] resources;
 
     @Column(nullable = false)
