@@ -19,12 +19,12 @@ public class ArticleController {
     }
 
     @GetMapping
-    public List<Article> getArticles(){
+    public List<Article> getArticles() {
         return articleService.getArticles();
     }
 
     @PostMapping
-    public Article newArticle(@RequestBody Article article){
+    public Article newArticle(@RequestBody Article article) {
         return articleService.newArticle(article);
     }
 }

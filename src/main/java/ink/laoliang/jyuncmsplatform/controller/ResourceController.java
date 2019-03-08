@@ -30,9 +30,14 @@ public class ResourceController {
         return resourceService.upload(file);
     }
 
+    @PutMapping
+    public Resource updateResource(@RequestBody Resource resource) {
+        return resourceService.updateResource(resource);
+    }
+
     @DeleteMapping
-    public List<Resource> deleteResource(@RequestParam String filePath) {
-        return resourceService.deleteResource(filePath);
+    public List<Resource> deleteResource(@RequestParam String location) {
+        return resourceService.deleteResource(location);
     }
 
     @GetMapping(value = "/filter-conditions")

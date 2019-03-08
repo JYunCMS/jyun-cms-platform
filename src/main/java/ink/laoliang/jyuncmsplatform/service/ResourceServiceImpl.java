@@ -66,7 +66,7 @@ public class ResourceServiceImpl implements ResourceService {
         // 上传文件路径，以“年-月”分文件夹，即：每月资源在一个文件夹中
         Path uploadPath = Paths.get(UPLOAD_DIR, now.get(Calendar.YEAR) + "-" + String.format("%02d", now.get(Calendar.MONTH) + 1));
         // 目标文件最终存放路径（即文件在服务器中存放的地址）
-        Path targetFilePath = uploadPath.resolve(storageFilename);
+        Path location = uploadPath.resolve(storageFilename);
         // 文件类型
         String fileType = handleFileTypeField(file.getContentType());
         // 文件大小
@@ -78,23 +78,28 @@ public class ResourceServiceImpl implements ResourceService {
             // 创建欲上传文件的输入流
             InputStream inputStream = file.getInputStream();
             // 上传文件
-            Files.copy(inputStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(inputStream, location, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new ResourceStorageException("【资源存储异常】- 无法存储文件！", e);
         }
 
         // 存库，数据库标识
-        return resourceRepository.save(new Resource(targetFilePath.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 0));
+        return resourceRepository.save(new Resource(location.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 0));
     }
 
     @Override
-    public List<Resource> deleteResource(String filePath) {
+    public Resource updateResource(Resource resource) {
+        return resourceRepository.save(resource);
+    }
+
+    @Override
+    public List<Resource> deleteResource(String location) {
         // 删库（资源在库中的对应标记行）
-        resourceRepository.deleteById(filePath);
+        resourceRepository.deleteById(location);
 
         // 删除磁盘上对应文件
         try {
-            Files.delete(Paths.get(filePath));
+            Files.delete(Paths.get(location));
         } catch (NoSuchFileException e) {
             // 文件删除失败，磁盘上已经没有该文件！（已知的异常，上面已经删了库，这里直接返回即可）
             return resourceRepository.findAll(ORDER_BY_CREATED_AT);
@@ -132,9 +137,9 @@ public class ResourceServiceImpl implements ResourceService {
     public List<Resource> getByConditions(String date, String type) {
         DateFormat format = new SimpleDateFormat("yyyy-MM");
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2000, 00, 01); // 2000-01-01
+        calendar.set(2000, Calendar.JANUARY, 1); // 2000-01-01
         Date startDate = calendar.getTime();
-        calendar.set(2099, 11, 31); // 2099-12-31
+        calendar.set(2099, Calendar.DECEMBER, 31); // 2099-12-31
         Date endDate = calendar.getTime();
         String fileType = "%";
 

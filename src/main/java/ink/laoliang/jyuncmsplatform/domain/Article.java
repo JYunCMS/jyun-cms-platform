@@ -27,6 +27,7 @@ public class Article extends _BaseEntity {
     @Column(columnDefinition = "blob")
     private Category category;
 
+    @Column(columnDefinition = "blob")
     private String[] tags;
 
     @Column(columnDefinition = "blob")

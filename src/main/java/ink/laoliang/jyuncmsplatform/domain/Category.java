@@ -14,6 +14,7 @@ import java.io.Serializable;
 public class Category extends _BaseEntity implements Serializable {
 
     @Id
+    @Column(columnDefinition = "varchar(125)")
     private String urlAlias;
 
     @Column(nullable = false)

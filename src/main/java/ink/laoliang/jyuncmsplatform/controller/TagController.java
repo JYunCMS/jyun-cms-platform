@@ -30,7 +30,7 @@ public class TagController {
     }
 
     @PutMapping
-    public Tag updateTag(@RequestBody Tag tag){
+    public Tag updateTag(@RequestBody Tag tag) {
         return tagService.updateTag(tag);
     }
 
@@ -40,7 +40,7 @@ public class TagController {
     }
 
     @PostMapping(value = "/article-bind")
-    public ArticleTag addArticleBind(@RequestBody ArticleTag articleTag){
+    public ArticleTag addArticleBind(@RequestBody ArticleTag articleTag) {
         return tagService.addArticleBind(articleTag);
     }
 }

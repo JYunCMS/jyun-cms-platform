@@ -12,7 +12,8 @@ import java.io.Serializable;
 public class Resource extends _BaseEntity implements Serializable {
 
     @Id
-    private String filePath;
+    @Column(columnDefinition = "char(125)")
+    private String location;
 
     @Column(nullable = false)
     private String originalFilename;
@@ -33,7 +34,7 @@ public class Resource extends _BaseEntity implements Serializable {
     }
 
     public Resource(Resource resource) {
-        this.filePath = resource.filePath;
+        this.location = resource.location;
         this.originalFilename = resource.originalFilename;
         this.storageFilename = resource.storageFilename;
         this.fileType = resource.fileType;
@@ -43,8 +44,8 @@ public class Resource extends _BaseEntity implements Serializable {
         this.updatedAt = resource.updatedAt;
     }
 
-    public Resource(String filePath, String originalFilename, String storageFilename, String fileType, String fileSize, Integer referenceCount) {
-        this.filePath = filePath;
+    public Resource(String location, String originalFilename, String storageFilename, String fileType, String fileSize, Integer referenceCount) {
+        this.location = location;
         this.originalFilename = originalFilename;
         this.storageFilename = storageFilename;
         this.fileType = fileType;
@@ -52,12 +53,12 @@ public class Resource extends _BaseEntity implements Serializable {
         this.referenceCount = referenceCount;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getLocation() {
+        return location;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getOriginalFilename() {

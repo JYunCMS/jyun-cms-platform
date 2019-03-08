@@ -7,11 +7,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ResourceService {
-    Resource upload(MultipartFile file);
-
     List<Resource> getResources();
 
-    List<Resource> deleteResource(String filePath);
+    Resource upload(MultipartFile file);
+
+    Resource updateResource(Resource resource);
+
+    List<Resource> deleteResource(String location);
 
     FilterConditions getFilterConditions();
 
