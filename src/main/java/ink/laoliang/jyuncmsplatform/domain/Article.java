@@ -31,7 +31,10 @@ public class Article extends _BaseEntity {
     private String[] tags;
 
     @Column(columnDefinition = "blob")
-    private Resource[] resources;
+    private Resource[] images;
+
+    @Column(columnDefinition = "blob")
+    private Resource[] accessories;
 
     @Column(nullable = false)
     private String status;
@@ -97,12 +100,20 @@ public class Article extends _BaseEntity {
         this.tags = tags;
     }
 
-    public Resource[] getResources() {
-        return resources;
+    public Resource[] getImages() {
+        return images;
     }
 
-    public void setResources(Resource[] resources) {
-        this.resources = resources;
+    public void setImages(Resource[] images) {
+        this.images = images;
+    }
+
+    public Resource[] getAccessories() {
+        return accessories;
+    }
+
+    public void setAccessories(Resource[] accessories) {
+        this.accessories = accessories;
     }
 
     public String getStatus() {

@@ -38,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> updateCategory(Category category) {
-        Category categoryModel = categoryRepository.getOne(category.getUrlAlias());
+        Category categoryModel = categoryRepository.findByUrlAlias(category.getUrlAlias());
 
         try {
             // 遍历传入的 category，将不空的（欲更新的）字段更新到 categoryModel 并存库
@@ -61,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> deleteCategory(String urlAlias) {
-        Category category = categoryRepository.getOne(urlAlias);
+        Category category = categoryRepository.findByUrlAlias(urlAlias);
 
         // 是否是叶子节点
         if (category.getBeLeaf()) {
@@ -95,7 +95,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getCategory(String urlAlias) {
-        return categoryRepository.getOne(urlAlias);
+        return categoryRepository.findByUrlAlias(urlAlias);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> moveUpNode(String urlAlias) {
-        Category currentCategory = categoryRepository.getOne(urlAlias);
+        Category currentCategory = categoryRepository.findByUrlAlias(urlAlias);
         Category frontCategory = categoryRepository.findByParentNodeUrlAliasAndSequence(currentCategory.getParentNodeUrlAlias(), currentCategory.getSequence() - 1);
 
         currentCategory.setSequence(currentCategory.getSequence() - 1);
@@ -119,7 +119,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> moveDownNode(String urlAlias) {
-        Category currentCategory = categoryRepository.getOne(urlAlias);
+        Category currentCategory = categoryRepository.findByUrlAlias(urlAlias);
         Category backCategory = categoryRepository.findByParentNodeUrlAliasAndSequence(currentCategory.getParentNodeUrlAlias(), currentCategory.getSequence() + 1);
 
         currentCategory.setSequence(currentCategory.getSequence() + 1);
@@ -144,7 +144,7 @@ public class CategoryServiceImpl implements CategoryService {
         // 如果不是根节点
         if (category.getNodeLevel() != 0) {
             // 更新父节点孩子数 childrenCount
-            Category parentCategory = categoryRepository.getOne(category.getParentNodeUrlAlias());
+            Category parentCategory = categoryRepository.findByUrlAlias(category.getParentNodeUrlAlias());
             parentCategory.setChildrenCount(parentCategory.getChildrenCount() - 1);
 
             // 如果这是父节点唯一的子节点

@@ -21,6 +21,11 @@ public class Tag extends _BaseEntity implements Serializable {
     public Tag() {
     }
 
+    public Tag(String name, Integer articleCount) {
+        this.name = name;
+        this.articleCount = articleCount;
+    }
+
     public String getName() {
         return name;
     }

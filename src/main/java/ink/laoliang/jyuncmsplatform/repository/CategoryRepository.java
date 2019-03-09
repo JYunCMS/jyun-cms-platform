@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, String> {
 
+    Category findByUrlAlias(String urlAlias);
+
     Integer countByNodeLevelAndParentNodeUrlAlias(Integer nodeLevel, String parentUrlAlias);
 
     Category findByParentNodeUrlAliasAndSequence(String parentNodeUrlAlias, Integer sequence);

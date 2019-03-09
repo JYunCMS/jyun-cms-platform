@@ -22,6 +22,11 @@ public class ArticleTag {
     public ArticleTag() {
     }
 
+    public ArticleTag(Integer articleId, String tagName) {
+        this.articleId = articleId;
+        this.tagName = tagName;
+    }
+
     public Integer getId() {
         return id;
     }
