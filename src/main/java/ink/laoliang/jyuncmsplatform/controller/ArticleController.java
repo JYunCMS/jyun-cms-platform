@@ -27,4 +27,9 @@ public class ArticleController {
     public Article newArticle(@RequestBody Article article) {
         return articleService.newArticle(article);
     }
+
+    @PutMapping
+    public Article updateArticle(@RequestBody Article article){
+        return articleService.updateArticle(article);
+    }
 }

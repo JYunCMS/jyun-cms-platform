@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -61,7 +63,6 @@ public class ArticleServiceImpl implements ArticleService {
 
                 // 添加 文章-标签 绑定到 ArticleTag 表
                 articleTagRepository.save(new ArticleTag(articleResult.getId(), tagName));
-
             }
         }
 
@@ -76,5 +77,66 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         return articleResult;
+    }
+
+    @Override
+    public Article updateArticle(Article article) {
+        Article oldArticle = articleRepository.findById(article.getId()).orElse(null);
+
+        // 更新 Resource 表 referenceCount 字段
+        for (Resource imageResource : article.getImages()) {
+            imageResource.setReferenceCount(1);
+            resourceRepository.save(imageResource);
+        }
+
+        // 对比新旧文章 images 引用列表，新 article 对象只有最新添加的图片列表，
+        // 所以需要将旧 article 中还在用的图片引用添加进新的，不再用的对应资源计数 -1
+        for (Resource imageResource : oldArticle.getImages()) {
+            if (article.getContent().contains(imageResource.getLocation())) {
+                List<Resource> tempImageResourceList = Arrays.asList(article.getImages());
+                List<Resource> imageResourceList = new ArrayList<>(tempImageResourceList);
+                imageResourceList.add(imageResource);
+                article.setImages(imageResourceList.toArray(new Resource[0]));
+            } else {
+                imageResource.setReferenceCount(imageResource.getReferenceCount() - 1);
+                resourceRepository.save(imageResource);
+            }
+        }
+
+        // 如果分类有更新，就更新对应分类的文章计数
+        if (!article.getCategory().getUrlAlias().equals(oldArticle.getCategory().getUrlAlias())) {
+            Category category = article.getCategory();
+            category.setArticleCount(category.getArticleCount() + 1);
+            categoryRepository.save(category);
+            category = oldArticle.getCategory();
+            category.setArticleCount(category.getArticleCount() - 1);
+            categoryRepository.save(category);
+        }
+
+        // 处理标签变动
+        List<String> newArticleTagList = Arrays.asList(article.getTags());
+        List<String> oldArticleTagList = Arrays.asList(oldArticle.getTags());
+        for (String newTagName : newArticleTagList) {
+            if (!oldArticleTagList.contains(newTagName)) {
+                Tag tag = tagRepository.findByName(newTagName);
+                if (tag != null) {
+                    tag.setArticleCount(tag.getArticleCount() + 1);
+                    tagRepository.save(tag);
+                } else {
+                    tagRepository.save(new Tag(newTagName, 1));
+                }
+            }
+        }
+        for (String oldTagName : oldArticleTagList) {
+            if (!newArticleTagList.contains(oldTagName)) {
+                Tag tag = tagRepository.findByName(oldTagName);
+                if (tag != null) {
+                    tag.setArticleCount(tag.getArticleCount() - 1);
+                    tagRepository.save(tag);
+                }
+            }
+        }
+
+        return articleRepository.save(article);
     }
 }

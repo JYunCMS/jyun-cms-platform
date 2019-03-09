@@ -8,4 +8,6 @@ public interface ArticleService {
     List<Article> getArticles();
 
     Article newArticle(Article article);
+
+    Article updateArticle(Article article);
 }
