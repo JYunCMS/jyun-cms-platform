@@ -34,6 +34,11 @@ public class ArticleController {
         return articleService.updateArticle(article);
     }
 
+    @DeleteMapping
+    public void deleteArticle(@RequestParam Integer articleId){
+        articleService.deleteArticle(articleId);
+    }
+
     @GetMapping(value = "/filter-conditions")
     public ArticleFilterConditions getFilterConditions() {
         return articleService.getFilterConditions();
@@ -50,5 +55,11 @@ public class ArticleController {
                                                  @RequestParam String selectedCategory,
                                                  @RequestParam String selectedTag) {
         return articleService.getArticlesByConditions(status, selectedDate, selectedCategory, selectedTag);
+    }
+
+    @PutMapping(value = "/move-to-recycle-bin")
+    public Article moveToRecycleBin(@RequestParam Boolean beDelete,
+                                    @RequestBody Article article) {
+        return articleService.moveToRecycleBin(beDelete, article);
     }
 }

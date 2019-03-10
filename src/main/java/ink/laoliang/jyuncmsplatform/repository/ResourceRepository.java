@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface ResourceRepository extends JpaRepository<Resource, String> {
 
+    Resource findByLocation(String location);
+
     @Query(value = "select distinct(fileType) from Resource")
     List<String> getFileTypes();
 

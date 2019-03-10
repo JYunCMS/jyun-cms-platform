@@ -45,6 +45,7 @@ public class Article extends _BaseEntity {
     }
 
     public Article(Article article) {
+        this.id = article.id;
         this.title = article.title;
         this.authorId = article.authorId;
         this.abstracts = article.abstracts;

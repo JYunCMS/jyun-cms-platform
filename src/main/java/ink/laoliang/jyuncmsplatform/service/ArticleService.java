@@ -12,9 +12,13 @@ public interface ArticleService {
 
     Article updateArticle(Article article);
 
+    void deleteArticle(Integer articleId);
+
     ArticleFilterConditions getFilterConditions();
 
     List<Article> getArticlesByStatus(String status);
 
     List<Article> getArticlesByConditions(String status, String selectedDate, String selectedCategory, String selectedTag);
+
+    Article moveToRecycleBin(Boolean beDelete, Article article);
 }

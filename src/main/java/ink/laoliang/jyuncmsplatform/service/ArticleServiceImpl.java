@@ -143,6 +143,40 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public void deleteArticle(Integer articleId) {
+        Article article = articleRepository.findById(articleId).orElse(null);
+        articleRepository.delete(article);
+
+        // 更新 Category 表 articleCount 字段
+        Category category = categoryRepository.findByUrlAlias(article.getCategory().getUrlAlias());
+        category.setArticleCount(category.getArticleCount() - 1);
+        categoryRepository.save(category);
+
+        // 更新 Tag 表 articleCount 字段，删除 ArticleTag 表 对应文章标签绑定关系
+        List<String> tagNameList = Arrays.asList(article.getTags());
+        for (String tagName : tagNameList) {
+            // 更新 articleCount
+            Tag tag = tagRepository.findByName(tagName);
+            tag.setArticleCount(tag.getArticleCount() - 1);
+            tagRepository.save(tag);
+            // 删除 ArticleTag 绑定
+            articleTagRepository.deleteArticleTagByArticleIdAndTagName(article.getId(), tagName);
+        }
+
+        // 通过 images 和 accessories 字段更新 Resource 表的 referenceCount 字段
+        for (Resource imageResource : article.getImages()) {
+            Resource resource = resourceRepository.findByLocation(imageResource.getLocation());
+            resource.setReferenceCount(resource.getReferenceCount() - 1);
+            resourceRepository.save(resource);
+        }
+        for (Resource accessoryResource : article.getAccessories()) {
+            Resource resource = resourceRepository.findByLocation(accessoryResource.getLocation());
+            resource.setReferenceCount(resource.getReferenceCount() - 1);
+            resourceRepository.save(resource);
+        }
+    }
+
+    @Override
     public ArticleFilterConditions getFilterConditions() {
         List<Article> articleList = articleRepository.findAll(ORDER_BY_CREATED_AT);
         List<String> dateList = new ArrayList<>();
@@ -227,42 +261,51 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         List<Article> articleList = articleRepository.findAllByConditions(dateMap.get("startDate"), dateMap.get("endDate"), status, beDelete);
-        List<Article> result = new ArrayList<>();
+        Iterator<Article> articleIterator = articleList.iterator();
 
         // 分类和标签条件都不空，筛选查询结果
         if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")
                 && selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
-            for (Article article : articleList) {
+            while (articleIterator.hasNext()) {
+                Article article = articleIterator.next();
                 List<String> tagList = Arrays.asList(article.getTags());
-                if (article.getCategory().getUrlAlias().equals(selectedCategory) && tagList.contains(selectedTag)) {
-                    result.add(article);
+                if (!article.getCategory().getUrlAlias().equals(selectedCategory) || !tagList.contains(selectedTag)) {
+                    articleIterator.remove();
                 }
             }
-            return result;
+            return articleList;
         }
 
         // 分类条件不空，标签条件空，筛选查询结果
         if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")) {
-            for (Article article : articleList) {
-                if (article.getCategory().getUrlAlias().equals(selectedCategory)) {
-                    result.add(article);
+            while (articleIterator.hasNext()) {
+                Article article = articleIterator.next();
+                if (!article.getCategory().getUrlAlias().equals(selectedCategory)) {
+                    articleIterator.remove();
                 }
             }
-            return result;
+            return articleList;
         }
 
         // 分类条件空，标签条件不空，筛选查询结果
         if (selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
-            for (Article article : articleList) {
+            while (articleIterator.hasNext()) {
+                Article article = articleIterator.next();
                 List<String> tagList = Arrays.asList(article.getTags());
-                if (tagList.contains(selectedTag)) {
-                    result.add(article);
+                if (!tagList.contains(selectedTag)) {
+                    articleIterator.remove();
                 }
             }
-            return result;
+            return articleList;
         }
 
         // 分类和标签都为空，不用筛选，直接返回查询结果
         return articleList;
+    }
+
+    @Override
+    public Article moveToRecycleBin(Boolean beDelete, Article article) {
+        article.setBeDelete(beDelete);
+        return articleRepository.save(article);
     }
 }
