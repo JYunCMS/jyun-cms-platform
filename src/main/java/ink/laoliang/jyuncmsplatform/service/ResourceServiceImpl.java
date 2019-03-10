@@ -1,9 +1,10 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Resource;
-import ink.laoliang.jyuncmsplatform.domain.response.FilterConditions;
+import ink.laoliang.jyuncmsplatform.domain.response.ResourceFilterConditions;
 import ink.laoliang.jyuncmsplatform.exception.ResourceStorageException;
 import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
+import ink.laoliang.jyuncmsplatform.util.QueryDateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -15,13 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
@@ -111,7 +106,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public FilterConditions getFilterConditions() {
+    public ResourceFilterConditions getFilterConditions() {
         Path uploadDir = Paths.get(UPLOAD_DIR);
         List<String> dateList = new ArrayList<>();
         try {
@@ -130,36 +125,18 @@ public class ResourceServiceImpl implements ResourceService {
             throw new ResourceStorageException("【资源存储异常】- 资源文件夹 " + uploadDir + " 下日期分类列表获取失败！", e);
         }
 
-        return new FilterConditions(dateList, resourceRepository.getFileTypes());
+        return new ResourceFilterConditions(dateList, resourceRepository.getFileTypes());
     }
 
     @Override
     public List<Resource> getByConditions(String date, String type) {
-        DateFormat format = new SimpleDateFormat("yyyy-MM");
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2000, Calendar.JANUARY, 1); // 2000-01-01
-        Date startDate = calendar.getTime();
-        calendar.set(2099, Calendar.DECEMBER, 31); // 2099-12-31
-        Date endDate = calendar.getTime();
-        String fileType = "%";
+        Map<String, Date> dateMap = QueryDateRange.handle(date);
 
-        if (date != null && !date.equals("") && !date.equals("null")) {
-            try {
-                startDate = format.parse(date);
-                calendar.setTime(startDate);
-                calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
-                calendar.add(Calendar.DATE, 1);
-                endDate = calendar.getTime();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+        if (type == null || type.equals("") || type.equals("null")) {
+            type = "%";
         }
 
-        if (type != null && !type.equals("") && !type.equals("null")) {
-            fileType = type;
-        }
-
-        return resourceRepository.findAllByConditions(startDate, endDate, fileType);
+        return resourceRepository.findAllByConditions(dateMap.get("startDate"), dateMap.get("endDate"), type);
     }
 
     private String handleFileTypeField(String MIMEType) {

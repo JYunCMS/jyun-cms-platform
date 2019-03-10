@@ -2,13 +2,13 @@ package ink.laoliang.jyuncmsplatform.domain.response;
 
 import java.util.List;
 
-public class FilterConditions {
+public class ResourceFilterConditions {
 
     private List<String> dateList;
 
     private List<String> typeList;
 
-    public FilterConditions(List<String> dateList, List<String> typeList) {
+    public ResourceFilterConditions(List<String> dateList, List<String> typeList) {
         this.dateList = dateList;
         this.typeList = typeList;
     }

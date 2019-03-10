@@ -1,14 +1,16 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.*;
+import ink.laoliang.jyuncmsplatform.domain.response.ArticleFilterConditions;
 import ink.laoliang.jyuncmsplatform.repository.*;
+import ink.laoliang.jyuncmsplatform.util.QueryDateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -36,7 +38,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<Article> getArticles() {
-        return articleRepository.findAll(ORDER_BY_CREATED_AT);
+        return articleRepository.findAllByBeDelete(false, ORDER_BY_CREATED_AT);
     }
 
     @Override
@@ -138,5 +140,129 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         return articleRepository.save(article);
+    }
+
+    @Override
+    public ArticleFilterConditions getFilterConditions() {
+        List<Article> articleList = articleRepository.findAll(ORDER_BY_CREATED_AT);
+        List<String> dateList = new ArrayList<>();
+        List<Category> categoryList = new ArrayList<>();
+        List<Tag> tagList = new ArrayList<>();
+        long allExcludeRecycleBinCount = 0;
+        long releaseCount = 0;
+        long pendingReviewCount = 0;
+        long draftCount = 0;
+        long recycleBinCount = 0;
+
+        if (articleList != null && articleList.size() > 0) {
+            // 获取创建文章最早时间和最晚时间，生成时间选择列表
+            DateFormat format = new SimpleDateFormat("yyyy-MM");
+            String beginTime = format.format(articleList.get(articleList.size() - 1).getCreatedAt());
+            String finalTime = format.format(articleList.get(0).getCreatedAt());
+            for (int year = Integer.parseInt(finalTime.split("-")[0]);
+                 year >= Integer.parseInt(beginTime.split("-")[0]); year--) {
+                if (year == Integer.parseInt(finalTime.split("-")[0])) {
+                    if (year == Integer.parseInt(beginTime.split("-")[0])) {
+                        for (int month = Integer.parseInt(finalTime.split("-")[1]);
+                             month >= Integer.parseInt(beginTime.split("-")[1]); month--) {
+                            dateList.add(year + "-" + String.format("%02d", month));
+                        }
+                    } else {
+                        for (int month = Integer.parseInt(finalTime.split("-")[1]); month >= 1; month--) {
+                            dateList.add(year + "-" + String.format("%02d", month));
+                        }
+                    }
+                } else if (year == Integer.parseInt(beginTime.split("-")[0])) {
+                    for (int month = 12; month >= Integer.parseInt(beginTime.split("-")[1]); month--) {
+                        dateList.add(year + "-" + String.format("%02d", month));
+                    }
+                } else {
+                    for (int month = 12; month >= 1; month--) {
+                        dateList.add(year + "-" + String.format("%02d", month));
+                    }
+                }
+            }
+
+            // 装填其他数据
+            categoryList = categoryRepository.findAll();
+            tagList = tagRepository.findAll(ORDER_BY_CREATED_AT);
+            allExcludeRecycleBinCount = articleRepository.countByBeDelete(false);
+            releaseCount = articleRepository.countByBeDeleteAndStatus(false, "已发布");
+            pendingReviewCount = articleRepository.countByBeDeleteAndStatus(false, "待审核");
+            draftCount = articleRepository.countByBeDeleteAndStatus(false, "草稿");
+            recycleBinCount = articleRepository.countByBeDelete(true);
+        }
+
+        return new ArticleFilterConditions(dateList, categoryList, tagList,
+                allExcludeRecycleBinCount, releaseCount, pendingReviewCount, draftCount, recycleBinCount);
+    }
+
+    @Override
+    public List<Article> getArticlesByStatus(String status) {
+        if (status.equals("全部")) {
+            return articleRepository.findAllByBeDelete(false, ORDER_BY_CREATED_AT);
+        } else if (status.equals("回收站")) {
+            return articleRepository.findAllByBeDelete(true, ORDER_BY_CREATED_AT);
+        } else {
+            return articleRepository.findAllByBeDeleteAndStatus(false, status, ORDER_BY_CREATED_AT);
+        }
+    }
+
+    @Override
+    public List<Article> getArticlesByConditions(String selectedStatus,
+                                                 String selectedDate,
+                                                 String selectedCategory,
+                                                 String selectedTag) {
+        // 默认 beDelete 字段为 false
+        boolean beDelete = false;
+        // 默认 status 字段为 %
+        String status = "%";
+        // 处理查询时间范围
+        Map<String, Date> dateMap = QueryDateRange.handle(selectedDate);
+        // 处理文章状态的查询条件
+        if (selectedStatus.equals("回收站")) {
+            beDelete = true;
+        } else if (!selectedStatus.equals("全部") && selectedStatus != null && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
+            status = selectedStatus;
+        }
+
+        List<Article> articleList = articleRepository.findAllByConditions(dateMap.get("startDate"), dateMap.get("endDate"), status, beDelete);
+        List<Article> result = new ArrayList<>();
+
+        // 分类和标签条件都不空，筛选查询结果
+        if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")
+                && selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
+            for (Article article : articleList) {
+                List<String> tagList = Arrays.asList(article.getTags());
+                if (article.getCategory().getUrlAlias().equals(selectedCategory) && tagList.contains(selectedTag)) {
+                    result.add(article);
+                }
+            }
+            return result;
+        }
+
+        // 分类条件不空，标签条件空，筛选查询结果
+        if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")) {
+            for (Article article : articleList) {
+                if (article.getCategory().getUrlAlias().equals(selectedCategory)) {
+                    result.add(article);
+                }
+            }
+            return result;
+        }
+
+        // 分类条件空，标签条件不空，筛选查询结果
+        if (selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
+            for (Article article : articleList) {
+                List<String> tagList = Arrays.asList(article.getTags());
+                if (tagList.contains(selectedTag)) {
+                    result.add(article);
+                }
+            }
+            return result;
+        }
+
+        // 分类和标签都为空，不用筛选，直接返回查询结果
+        return articleList;
     }
 }

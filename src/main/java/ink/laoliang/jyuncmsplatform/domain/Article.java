@@ -44,6 +44,21 @@ public class Article extends _BaseEntity {
     public Article() {
     }
 
+    public Article(Article article) {
+        this.title = article.title;
+        this.authorId = article.authorId;
+        this.abstracts = article.abstracts;
+        this.content = article.content;
+        this.category = article.category;
+        this.tags = article.tags;
+        this.images = article.images;
+        this.accessories = article.accessories;
+        this.status = article.status;
+        this.beDelete = article.beDelete;
+        this.createdAt = article.createdAt;
+        this.updatedAt = article.updatedAt;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -1,7 +1,7 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
 import ink.laoliang.jyuncmsplatform.domain.Resource;
-import ink.laoliang.jyuncmsplatform.domain.response.FilterConditions;
+import ink.laoliang.jyuncmsplatform.domain.response.ResourceFilterConditions;
 import ink.laoliang.jyuncmsplatform.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +41,7 @@ public class ResourceController {
     }
 
     @GetMapping(value = "/filter-conditions")
-    public FilterConditions getFilterConditions() {
+    public ResourceFilterConditions getFilterConditions() {
         return resourceService.getFilterConditions();
     }
 

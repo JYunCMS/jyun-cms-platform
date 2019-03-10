@@ -1,6 +1,7 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
 import ink.laoliang.jyuncmsplatform.domain.Article;
+import ink.laoliang.jyuncmsplatform.domain.response.ArticleFilterConditions;
 import ink.laoliang.jyuncmsplatform.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,25 @@ public class ArticleController {
     }
 
     @PutMapping
-    public Article updateArticle(@RequestBody Article article){
+    public Article updateArticle(@RequestBody Article article) {
         return articleService.updateArticle(article);
+    }
+
+    @GetMapping(value = "/filter-conditions")
+    public ArticleFilterConditions getFilterConditions() {
+        return articleService.getFilterConditions();
+    }
+
+    @GetMapping(value = "/by-status")
+    public List<Article> getArticlesByStatus(@RequestParam String status) {
+        return articleService.getArticlesByStatus(status);
+    }
+
+    @GetMapping(value = "/by-conditions")
+    public List<Article> getArticlesByConditions(@RequestParam String status,
+                                                 @RequestParam String selectedDate,
+                                                 @RequestParam String selectedCategory,
+                                                 @RequestParam String selectedTag) {
+        return articleService.getArticlesByConditions(status, selectedDate, selectedCategory, selectedTag);
     }
 }
