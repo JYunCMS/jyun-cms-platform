@@ -27,13 +27,16 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final ResourceRepository resourceRepository;
 
+    private final ArticleCategoryRepository articleCategoryRepository;
+
     @Autowired
-    public ArticleServiceImpl(ArticleRepository articleRepository, CategoryRepository categoryRepository, TagRepository tagRepository, ArticleTagRepository articleTagRepository, ResourceRepository resourceRepository) {
+    public ArticleServiceImpl(ArticleRepository articleRepository, CategoryRepository categoryRepository, TagRepository tagRepository, ArticleTagRepository articleTagRepository, ResourceRepository resourceRepository, ArticleCategoryRepository articleCategoryRepository) {
         this.articleRepository = articleRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
         this.articleTagRepository = articleTagRepository;
         this.resourceRepository = resourceRepository;
+        this.articleCategoryRepository = articleCategoryRepository;
     }
 
     @Override
@@ -46,10 +49,11 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleResult = articleRepository.save(article);
 
         // 文章保存成功后……
-        // 1、更新 Category 表 articleCount 字段
+        // 1、更新 Category 表 articleCount 字段，并添加 文章-分类 绑定到 ArticleCategory 表
         Category category = categoryRepository.findByUrlAlias(articleResult.getCategory().getUrlAlias());
         category.setArticleCount(category.getArticleCount() + 1);
         categoryRepository.save(category);
+        articleCategoryRepository.save(new ArticleCategory(articleResult.getId(), articleResult.getCategory().getUrlAlias()));
 
         // 2、更新 Tag 表 articleCount 字段，并添加 文章-标签 绑定到 ArticleTag 表
         if (articleResult.getTags().length != 0) {
@@ -105,17 +109,21 @@ public class ArticleServiceImpl implements ArticleService {
             }
         }
 
-        // 如果分类有更新，就更新对应分类的文章计数
+        // 如果分类有更新，就更新对应分类的文章计数，以及更新 文章-分类 绑定 ArticleCategory 表
         if (!article.getCategory().getUrlAlias().equals(oldArticle.getCategory().getUrlAlias())) {
-            Category category = article.getCategory();
-            category.setArticleCount(category.getArticleCount() + 1);
-            categoryRepository.save(category);
-            category = oldArticle.getCategory();
-            category.setArticleCount(category.getArticleCount() - 1);
-            categoryRepository.save(category);
+            Category newCategory = categoryRepository.findByUrlAlias(article.getCategory().getUrlAlias());
+            newCategory.setArticleCount(newCategory.getArticleCount() + 1);
+            categoryRepository.save(newCategory);
+            Category oldCategory = categoryRepository.findByUrlAlias(oldArticle.getCategory().getUrlAlias());
+            oldCategory.setArticleCount(oldCategory.getArticleCount() - 1);
+            categoryRepository.save(oldCategory);
+
+            ArticleCategory articleCategory = articleCategoryRepository.findByArticleIdAndCategoryUrlAlias(article.getId(), oldCategory.getUrlAlias());
+            articleCategory.setCategoryUrlAlias(newCategory.getUrlAlias());
+            articleCategoryRepository.save(articleCategory);
         }
 
-        // 处理标签变动
+        // 处理标签变动，更新标签计数，以及更新 文章-标签 绑定 ArticleTag 表
         List<String> newArticleTagList = Arrays.asList(article.getTags());
         List<String> oldArticleTagList = Arrays.asList(oldArticle.getTags());
         for (String newTagName : newArticleTagList) {
@@ -125,17 +133,19 @@ public class ArticleServiceImpl implements ArticleService {
                     tag.setArticleCount(tag.getArticleCount() + 1);
                     tagRepository.save(tag);
                 } else {
-                    tagRepository.save(new Tag(newTagName, 1));
+                    tag = tagRepository.save(new Tag(newTagName, 1));
                 }
+
+                articleTagRepository.save(new ArticleTag(article.getId(), tag.getName()));
             }
         }
         for (String oldTagName : oldArticleTagList) {
             if (!newArticleTagList.contains(oldTagName)) {
                 Tag tag = tagRepository.findByName(oldTagName);
-                if (tag != null) {
-                    tag.setArticleCount(tag.getArticleCount() - 1);
-                    tagRepository.save(tag);
-                }
+                tag.setArticleCount(tag.getArticleCount() - 1);
+                tagRepository.save(tag);
+
+                articleTagRepository.deleteArticleTagByArticleIdAndTagName(article.getId(), tag.getName());
             }
         }
 
@@ -147,10 +157,11 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleRepository.findById(articleId).orElse(null);
         articleRepository.delete(article);
 
-        // 更新 Category 表 articleCount 字段
+        // 更新 Category 表 articleCount 字段，删除 ArticleCategory 表 对应文章分类绑定关系
         Category category = categoryRepository.findByUrlAlias(article.getCategory().getUrlAlias());
         category.setArticleCount(category.getArticleCount() - 1);
         categoryRepository.save(category);
+        articleCategoryRepository.deleteArticleCategoryByArticleIdAndCategoryUrlAlias(articleId, category.getUrlAlias());
 
         // 更新 Tag 表 articleCount 字段，删除 ArticleTag 表 对应文章标签绑定关系
         List<String> tagNameList = Arrays.asList(article.getTags());
@@ -253,54 +264,21 @@ public class ArticleServiceImpl implements ArticleService {
         String status = "%";
         // 处理查询时间范围
         Map<String, Date> dateMap = QueryDateRange.handle(selectedDate);
+
         // 处理文章状态的查询条件
         if (selectedStatus.equals("回收站")) {
             beDelete = true;
         } else if (!selectedStatus.equals("全部") && selectedStatus != null && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
             status = selectedStatus;
         }
-
-        List<Article> articleList = articleRepository.findAllByConditions(dateMap.get("startDate"), dateMap.get("endDate"), status, beDelete);
-        Iterator<Article> articleIterator = articleList.iterator();
-
-        // 分类和标签条件都不空，筛选查询结果
-        if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")
-                && selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
-            while (articleIterator.hasNext()) {
-                Article article = articleIterator.next();
-                List<String> tagList = Arrays.asList(article.getTags());
-                if (!article.getCategory().getUrlAlias().equals(selectedCategory) || !tagList.contains(selectedTag)) {
-                    articleIterator.remove();
-                }
-            }
-            return articleList;
+        if (selectedCategory == null || selectedCategory.equals("null") || selectedCategory.equals("")) {
+            selectedCategory = "%";
+        }
+        if (selectedTag == null || selectedTag.equals("null") || selectedCategory.equals("")) {
+            selectedTag = "%";
         }
 
-        // 分类条件不空，标签条件空，筛选查询结果
-        if (selectedCategory != null && !selectedCategory.equals("null") && !selectedCategory.equals("")) {
-            while (articleIterator.hasNext()) {
-                Article article = articleIterator.next();
-                if (!article.getCategory().getUrlAlias().equals(selectedCategory)) {
-                    articleIterator.remove();
-                }
-            }
-            return articleList;
-        }
-
-        // 分类条件空，标签条件不空，筛选查询结果
-        if (selectedTag != null && !selectedTag.equals("null") && !selectedTag.equals("")) {
-            while (articleIterator.hasNext()) {
-                Article article = articleIterator.next();
-                List<String> tagList = Arrays.asList(article.getTags());
-                if (!tagList.contains(selectedTag)) {
-                    articleIterator.remove();
-                }
-            }
-            return articleList;
-        }
-
-        // 分类和标签都为空，不用筛选，直接返回查询结果
-        return articleList;
+        return articleRepository.findAllByConditions(dateMap.get("startDate"), dateMap.get("endDate"), status, beDelete, selectedCategory, selectedTag);
     }
 
     @Override

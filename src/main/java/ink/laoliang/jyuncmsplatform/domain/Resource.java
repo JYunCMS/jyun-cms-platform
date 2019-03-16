@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class Resource extends _BaseEntity implements Serializable {
 
     @Id
-    @Column(columnDefinition = "char(125)")
+    @Column(columnDefinition = "char(50)")
     private String location;
 
     @Column(nullable = false)

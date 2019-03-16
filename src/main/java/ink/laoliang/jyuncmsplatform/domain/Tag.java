@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class Tag extends _BaseEntity implements Serializable {
 
     @Id
-    @Column(columnDefinition = "char(125)")
+    @Column(columnDefinition = "char(20)")
     private String name;
 
     @Column(nullable = false, columnDefinition = "bigint unsigned")
