@@ -71,6 +71,8 @@ public class ArticleServiceImpl implements ArticleService {
                 articleTagRepository.save(new ArticleTag(articleResult.getId(), tagName));
             }
         }
+        // 添加一个空标签的 文章-标签 绑定，用于筛选查询
+        articleTagRepository.save(new ArticleTag(articleResult.getId(), ""));
 
         // 3、更新 Resource 表 referenceCount 字段
         for (Resource imageResource : articleResult.getImages()) {
@@ -171,8 +173,10 @@ public class ArticleServiceImpl implements ArticleService {
             tag.setArticleCount(tag.getArticleCount() - 1);
             tagRepository.save(tag);
             // 删除 ArticleTag 绑定
-            articleTagRepository.deleteArticleTagByArticleIdAndTagName(article.getId(), tagName);
+            articleTagRepository.deleteArticleTagByArticleIdAndTagName(articleId, tagName);
         }
+        // 删除空标签的 文章-标签 绑定
+        articleTagRepository.deleteArticleTagByArticleIdAndTagName(articleId, "");
 
         // 通过 images 和 accessories 字段更新 Resource 表的 referenceCount 字段
         for (Resource imageResource : article.getImages()) {
@@ -274,7 +278,7 @@ public class ArticleServiceImpl implements ArticleService {
         if (selectedCategory == null || selectedCategory.equals("null") || selectedCategory.equals("")) {
             selectedCategory = "%";
         }
-        if (selectedTag == null || selectedTag.equals("null") || selectedCategory.equals("")) {
+        if (selectedTag == null || selectedTag.equals("null") || selectedTag.equals("")) {
             selectedTag = "%";
         }
 
