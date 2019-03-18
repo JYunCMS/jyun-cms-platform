@@ -1,7 +1,6 @@
 package ink.laoliang.jyuncmsplatform.util;
 
 import ink.laoliang.jyuncmsplatform.domain.User;
-import ink.laoliang.jyuncmsplatform.exception.UserTokenException;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
@@ -55,16 +54,16 @@ public class JwtToken {
                     .getBody();
 
             if (!body.getAudience().equals(username)) {
-                throw new UserTokenException("【用户令牌异常】- 令牌与用户名不匹配，请重新登录！");
+                return "【用户令牌异常】- 令牌与用户名不匹配，请重新登录！";
             }
 
             // 身份验证通过，返回用户角色供拦截器向 Service 层传递
             return body.getSubject();
 
         } catch (ExpiredJwtException expiredJwtException) {
-            throw new UserTokenException("【用户令牌异常】- 令牌已过期，请重新登录！");
+            return "【用户令牌异常】- 令牌已过期，请重新登录！";
         } catch (Exception e) {
-            throw new UserTokenException("【用户令牌异常】- JWT 签名与本地计算的签名不匹配，请重新登陆！", e);
+            return "【用户令牌异常】- JWT 签名与本地计算的签名不匹配，请重新登陆！";
         }
     }
 }

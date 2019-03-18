@@ -10,6 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
@@ -27,13 +29,26 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-            // 如果程序抛异常给前端，将再次访问 /error ，这里返回 true 将异常顺利抛向前端
-            if (request.getRequestURI().equals("/error")) {
-                return true;
+            // 核验 Token 并获取用户角色
+            String USER_ROLE = JwtToken.verifyTokenAndGetUserRole(request.getHeader("Authorization"), request.getHeader("From"), JWT_SECRET_KEY);
+
+            // 返回字符串开头为“【”，表示 “未通过身份验证” ，返回 401 Unauthorized 错误
+            if (USER_ROLE.substring(0, 1).equals("【")) {
+                response.setStatus(401);
+                response.setContentType("application/json;charset=UTF-8");
+                response.setHeader("Connection", "close");
+                String responseError = "{\n" +
+                        "    \"timestamp\": \"" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "\",\n" +
+                        "    \"status\": 401,\n" +
+                        "    \"error\": \"Unauthorized\",\n" +
+                        "    \"message\": \"" + USER_ROLE + "\",\n" +
+                        "    \"path\": \"" + request.getRequestURI() + "\"\n" +
+                        "}";
+                response.getWriter().write(responseError);
+                return false;
             }
 
-            // 核验 Token 并获取用户角色
-            String USER_ROLE = JwtToken.verifyTokenAndGetUserRole(request.getHeader("Authorization"), request.getHeader("Username"), JWT_SECRET_KEY);
+            // 通过身份验证，将 Token 中提取的用户角色信息放置在 request 的 attribute 中，供 Service 层取用，验证角色权限
             request.setAttribute("USER_ROLE", USER_ROLE);
             return true;
         }
