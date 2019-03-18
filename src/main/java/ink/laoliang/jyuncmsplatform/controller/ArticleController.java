@@ -25,18 +25,21 @@ public class ArticleController {
     }
 
     @PostMapping
-    public Article newArticle(@RequestBody Article article) {
-        return articleService.newArticle(article);
+    public Article newArticle(@RequestAttribute String USER_ROLE,
+                              @RequestBody Article article) {
+        return articleService.newArticle(USER_ROLE, article);
     }
 
     @PutMapping
-    public Article updateArticle(@RequestBody Article article) {
-        return articleService.updateArticle(article);
+    public Article updateArticle(@RequestAttribute String USER_ROLE,
+                                 @RequestBody Article article) {
+        return articleService.updateArticle(USER_ROLE, article);
     }
 
     @DeleteMapping
-    public void deleteArticle(@RequestParam Integer articleId){
-        articleService.deleteArticle(articleId);
+    public void deleteArticle(@RequestAttribute String USER_ROLE,
+                              @RequestParam Integer articleId) {
+        articleService.deleteArticle(USER_ROLE, articleId);
     }
 
     @GetMapping(value = "/filter-conditions")
@@ -58,8 +61,9 @@ public class ArticleController {
     }
 
     @PutMapping(value = "/move-to-recycle-bin")
-    public Article moveToRecycleBin(@RequestParam Boolean beDelete,
+    public Article moveToRecycleBin(@RequestAttribute String USER_ROLE,
+                                    @RequestParam Boolean beDelete,
                                     @RequestBody Article article) {
-        return articleService.moveToRecycleBin(beDelete, article);
+        return articleService.moveToRecycleBin(USER_ROLE, beDelete, article);
     }
 }

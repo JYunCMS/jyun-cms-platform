@@ -3,8 +3,11 @@ package ink.laoliang.jyuncmsplatform.service;
 import ink.laoliang.jyuncmsplatform.config.ArticleStatus;
 import ink.laoliang.jyuncmsplatform.domain.*;
 import ink.laoliang.jyuncmsplatform.domain.response.ArticleFilterConditions;
+import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
+import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.*;
 import ink.laoliang.jyuncmsplatform.util.QueryDateRange;
+import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -46,7 +49,12 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article newArticle(Article article) {
+    public Article newArticle(String USER_ROLE, Article article) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有发布文章的权限，可提交文章并联系管理员审核！");
+        }
+
         Article articleResult = articleRepository.save(article);
 
         // 文章保存成功后……
@@ -89,8 +97,16 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article updateArticle(Article article) {
+    public Article updateArticle(String USER_ROLE, Article article) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有发布文章的权限，可联系管理员审核并发布！");
+        }
+
         Article oldArticle = articleRepository.findById(article.getId()).orElse(null);
+        if (oldArticle == null) {
+            throw new IllegalParameterException("【非法参数异常】- 欲更新的文章不存在！");
+        }
 
         // 更新 Resource 表 referenceCount 字段
         for (Resource imageResource : article.getImages()) {
@@ -156,8 +172,16 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void deleteArticle(Integer articleId) {
+    public void deleteArticle(String USER_ROLE, Integer articleId) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除文章的权限！");
+        }
+
         Article article = articleRepository.findById(articleId).orElse(null);
+        if (article == null) {
+            throw new IllegalParameterException("【非法参数异常】- 欲删除的文章不存在！");
+        }
         articleRepository.delete(article);
 
         // 更新 Category 表 articleCount 字段，删除 ArticleCategory 表 对应文章分类绑定关系
@@ -167,7 +191,7 @@ public class ArticleServiceImpl implements ArticleService {
         articleCategoryRepository.deleteArticleCategoryByArticleIdAndCategoryUrlAlias(articleId, category.getUrlAlias());
 
         // 更新 Tag 表 articleCount 字段，删除 ArticleTag 表 对应文章标签绑定关系
-        List<String> tagNameList = Arrays.asList(article.getTags());
+        String[] tagNameList = article.getTags();
         for (String tagName : tagNameList) {
             // 更新 articleCount
             Tag tag = tagRepository.findByName(tagName);
@@ -273,7 +297,7 @@ public class ArticleServiceImpl implements ArticleService {
         // 处理文章状态的查询条件
         if (selectedStatus.equals(ArticleStatus.RECYCLE_BIN)) {
             beDelete = true;
-        } else if (!selectedStatus.equals(ArticleStatus.ALL) && selectedStatus != null && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
+        } else if (!selectedStatus.equals(ArticleStatus.ALL) && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
             status = selectedStatus;
         }
         if (selectedCategory == null || selectedCategory.equals("null") || selectedCategory.equals("")) {
@@ -287,7 +311,12 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article moveToRecycleBin(Boolean beDelete, Article article) {
+    public Article moveToRecycleBin(String USER_ROLE, Boolean beDelete, Article article) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有将文章移动到回收站的权限！");
+        }
+
         article.setBeDelete(beDelete);
         return articleRepository.save(article);
     }

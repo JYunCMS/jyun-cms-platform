@@ -3,8 +3,10 @@ package ink.laoliang.jyuncmsplatform.service;
 import ink.laoliang.jyuncmsplatform.domain.Resource;
 import ink.laoliang.jyuncmsplatform.domain.response.ResourceFilterConditions;
 import ink.laoliang.jyuncmsplatform.exception.ResourceStorageException;
+import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
 import ink.laoliang.jyuncmsplatform.util.QueryDateRange;
+import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -83,12 +85,12 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public Resource updateResource(Resource resource) {
-        return resourceRepository.save(resource);
-    }
+    public List<Resource> deleteResource(String USER_ROLE, String location) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除资源文件的权限！");
+        }
 
-    @Override
-    public List<Resource> deleteResource(String location) {
         // 删库（资源在库中的对应标记行）
         resourceRepository.deleteById(location);
 

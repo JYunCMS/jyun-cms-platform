@@ -4,9 +4,11 @@ import ink.laoliang.jyuncmsplatform.domain.User;
 import ink.laoliang.jyuncmsplatform.domain.request.UpdateUserInfo;
 import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
 import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
+import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.UserRepository;
 import ink.laoliang.jyuncmsplatform.util.JwtToken;
 import ink.laoliang.jyuncmsplatform.util.MD5Encode;
+import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addNewUser(User user) {
+    public User addNewUser(String USER_ROLE, User user) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) < UserRole.getUserRoleLevel(user.getRole())) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 不能创建比当前用户角色等级更高的用户！");
+        }
+
         checkUsernameFormat(user.getUsername());
         checkPasswordFormat(user.getPassword());
 
@@ -48,7 +55,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(UpdateUserInfo updateUserInfo) {
+    public User updateUser(String USER_ROLE, UpdateUserInfo updateUserInfo) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) < UserRole.getUserRoleLevel(updateUserInfo.getUser().getRole())) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 不能将当前用户角色修改为等级更高的角色！");
+        }
+
         User oldUser = userRepository.findById(updateUserInfo.getUser().getUsername()).orElse(null);
         if (oldUser == null) {
             throw new IllegalParameterException("【非法参数异常】- 用户名 " + updateUserInfo.getUser().getUsername() + " 不存在！");
@@ -70,9 +82,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(String username) {
-        if (userRepository.findById(username).orElse(null) == null) {
+    public void deleteUser(String USER_ROLE, String username) {
+        User user = userRepository.findById(username).orElse(null);
+
+        if (user == null) {
             throw new IllegalParameterException("【非法参数异常】- 用户名 " + username + " 不存在！");
+        }
+
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= UserRole.getUserRoleLevel(user.getRole())) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 只能删除比当前用户角色等级更低的用户！");
         }
 
         userRepository.deleteById(username);

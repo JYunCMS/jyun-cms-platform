@@ -26,18 +26,21 @@ public class UserController {
     }
 
     @PostMapping
-    public User addNewUser(@RequestBody User user) {
-        return userService.addNewUser(user);
+    public User addNewUser(@RequestAttribute String USER_ROLE,
+                           @RequestBody User user) {
+        return userService.addNewUser(USER_ROLE, user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody UpdateUserInfo updateUserInfo) {
-        return userService.updateUser(updateUserInfo);
+    public User updateUser(@RequestAttribute String USER_ROLE,
+                           @RequestBody UpdateUserInfo updateUserInfo) {
+        return userService.updateUser(USER_ROLE, updateUserInfo);
     }
 
     @DeleteMapping
-    public void deleteUser(@RequestParam String username) {
-        userService.deleteUser(username);
+    public void deleteUser(@RequestAttribute String USER_ROLE,
+                           @RequestParam String username) {
+        userService.deleteUser(USER_ROLE, username);
     }
 
     @PostMapping(value = "/login")

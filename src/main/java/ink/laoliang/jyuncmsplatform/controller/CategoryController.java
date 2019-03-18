@@ -24,18 +24,21 @@ public class CategoryController {
     }
 
     @PostMapping
-    public List<Category> createCategory(@RequestBody Category category) {
-        return categoryService.createCategory(category);
+    public List<Category> createCategory(@RequestAttribute String USER_ROLE,
+                                         @RequestBody Category category) {
+        return categoryService.createCategory(USER_ROLE, category);
     }
 
     @PutMapping
-    public List<Category> updateCategory(@RequestBody Category category) {
-        return categoryService.updateCategory(category);
+    public List<Category> updateCategory(@RequestAttribute String USER_ROLE,
+                                         @RequestBody Category category) {
+        return categoryService.updateCategory(USER_ROLE, category);
     }
 
     @DeleteMapping
-    public List<Category> deleteCategory(@RequestParam String urlAlias) {
-        return categoryService.deleteCategory(urlAlias);
+    public List<Category> deleteCategory(@RequestAttribute String USER_ROLE,
+                                         @RequestParam String urlAlias) {
+        return categoryService.deleteCategory(USER_ROLE, urlAlias);
     }
 
     @GetMapping(value = "/category")
@@ -50,12 +53,14 @@ public class CategoryController {
     }
 
     @PatchMapping(value = "/move-up-node")
-    public List<Category> moveUpNode(@RequestParam String urlAlias) {
-        return categoryService.moveUpNode(urlAlias);
+    public List<Category> moveUpNode(@RequestAttribute String USER_ROLE,
+                                     @RequestParam String urlAlias) {
+        return categoryService.moveUpNode(USER_ROLE, urlAlias);
     }
 
     @PatchMapping(value = "/move-down-node")
-    public List<Category> moveDownNode(@RequestParam String urlAlias) {
-        return categoryService.moveDownNode(urlAlias);
+    public List<Category> moveDownNode(@RequestAttribute String USER_ROLE,
+                                       @RequestParam String urlAlias) {
+        return categoryService.moveDownNode(USER_ROLE, urlAlias);
     }
 }

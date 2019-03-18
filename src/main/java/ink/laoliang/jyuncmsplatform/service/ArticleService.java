@@ -6,13 +6,14 @@ import ink.laoliang.jyuncmsplatform.domain.response.ArticleFilterConditions;
 import java.util.List;
 
 public interface ArticleService {
+
     List<Article> getArticles();
 
-    Article newArticle(Article article);
+    Article newArticle(String USER_ROLE, Article article);
 
-    Article updateArticle(Article article);
+    Article updateArticle(String USER_ROLE, Article article);
 
-    void deleteArticle(Integer articleId);
+    void deleteArticle(String USER_ROLE, Integer articleId);
 
     ArticleFilterConditions getFilterConditions();
 
@@ -20,5 +21,5 @@ public interface ArticleService {
 
     List<Article> getArticlesByConditions(String status, String selectedDate, String selectedCategory, String selectedTag);
 
-    Article moveToRecycleBin(Boolean beDelete, Article article);
+    Article moveToRecycleBin(String USER_ROLE, Boolean beDelete, Article article);
 }

@@ -20,7 +20,7 @@ public class JwtToken {
     /**
      * 创建 Token
      *
-     * @param username
+     * @param user
      * @param jwtSecretKey
      * @return
      */

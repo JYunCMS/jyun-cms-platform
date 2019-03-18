@@ -4,9 +4,11 @@ import ink.laoliang.jyuncmsplatform.domain.Article;
 import ink.laoliang.jyuncmsplatform.domain.ArticleTag;
 import ink.laoliang.jyuncmsplatform.domain.Tag;
 import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
+import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
 import ink.laoliang.jyuncmsplatform.repository.ArticleTagRepository;
 import ink.laoliang.jyuncmsplatform.repository.TagRepository;
+import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -49,12 +51,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Tag updateTag(Tag tag) {
-        return tagRepository.save(tag);
-    }
+    public List<Tag> deleteTag(String USER_ROLE, String name) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除标签的权限！");
+        }
 
-    @Override
-    public List<Tag> deleteTag(String name) {
         List<ArticleTag> articleTagList = articleTagRepository.findAllByTagName(name);
         if (articleTagList != null && articleTagList.size() != 0) {
             for (ArticleTag articleTag : articleTagList) {
@@ -74,10 +76,5 @@ public class TagServiceImpl implements TagService {
         // 删除标签
         tagRepository.deleteById(name);
         return tagRepository.findAll(ORDER_BY_CREATED_AT);
-    }
-
-    @Override
-    public ArticleTag addArticleBind(ArticleTag articleTag) {
-        return articleTagRepository.save(articleTag);
     }
 }

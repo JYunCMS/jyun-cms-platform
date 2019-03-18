@@ -2,7 +2,9 @@ package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Category;
 import ink.laoliang.jyuncmsplatform.exception.CategoryUpdateException;
+import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.CategoryRepository;
+import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -31,13 +33,23 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> createCategory(Category category) {
+    public List<Category> createCategory(String USER_ROLE, Category category) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有创建新分类目录的权限！");
+        }
+
         categoryRepository.save(category);
         return categoryRepository.findAll(ORDER_BY_SEQUENCE);
     }
 
     @Override
-    public List<Category> updateCategory(Category category) {
+    public List<Category> updateCategory(String USER_ROLE, Category category) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有更新分类目录的权限！");
+        }
+
         Category categoryModel = categoryRepository.findByUrlAlias(category.getUrlAlias());
 
         try {
@@ -60,7 +72,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> deleteCategory(String urlAlias) {
+    public List<Category> deleteCategory(String USER_ROLE, String urlAlias) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除分类目录的权限！");
+        }
+
         Category category = categoryRepository.findByUrlAlias(urlAlias);
 
         // 是否是叶子节点
@@ -133,7 +150,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> moveUpNode(String urlAlias) {
+    public List<Category> moveUpNode(String USER_ROLE, String urlAlias) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有移动分类目录位置的权限！");
+        }
+
         Category currentCategory = categoryRepository.findByUrlAlias(urlAlias);
         Category frontCategory = categoryRepository.findByParentNodeUrlAliasAndSequence(currentCategory.getParentNodeUrlAlias(), currentCategory.getSequence() - 1);
 
@@ -147,7 +169,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> moveDownNode(String urlAlias) {
+    public List<Category> moveDownNode(String USER_ROLE, String urlAlias) {
+        // 验证用户角色权限
+        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有移动分类目录位置的权限！");
+        }
+
         Category currentCategory = categoryRepository.findByUrlAlias(urlAlias);
         Category backCategory = categoryRepository.findByParentNodeUrlAliasAndSequence(currentCategory.getParentNodeUrlAlias(), currentCategory.getSequence() + 1);
 
