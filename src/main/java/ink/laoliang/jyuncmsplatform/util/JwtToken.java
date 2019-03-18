@@ -1,5 +1,7 @@
 package ink.laoliang.jyuncmsplatform.util;
 
+import ink.laoliang.jyuncmsplatform.domain.User;
+import ink.laoliang.jyuncmsplatform.exception.UserTokenException;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
@@ -22,12 +24,13 @@ public class JwtToken {
      * @param jwtSecretKey
      * @return
      */
-    public static String createToken(String username, String jwtSecretKey) {
+    public static String createToken(User user, String jwtSecretKey) {
         long nowTime = System.currentTimeMillis();
 
         JwtBuilder builder = Jwts.builder()
                 .setIssuer("JYunCMS") // 签发人(iss) -> JYunCMS
-                .setAudience(username) // 受众(aud) -> 存放用户名
+                .setAudience(user.getUsername()) // 受众(aud) -> 存放用户名
+                .setSubject(user.getRole()) // 主题(sub) -> 存放用户角色
                 .setIssuedAt(new Date(nowTime)) // 签发时间(iat) -> 当前系统时间
                 .setExpiration(new Date(nowTime + VALID_TIME)) // 过期时间(exp) -> 当前系统时间 + 定义的有效时长
                 .signWith(SIGNATURE_ALGORITHM, new SecretKeySpec(jwtSecretKey.getBytes(), SIGNATURE_ALGORITHM.getJcaName()));
@@ -36,14 +39,15 @@ public class JwtToken {
     }
 
     /**
-     * 核验 Token
+     * 核验 Token 并获取用户角色
+     * 当身份验证通过，返回用户角色供拦截器向 Service 层传递
      *
      * @param token
      * @param username
      * @param jwtSecretKey
      * @return
      */
-    public static String verifyToken(String token, String username, String jwtSecretKey) {
+    public static String verifyTokenAndGetUserRole(String token, String username, String jwtSecretKey) {
         try {
             Claims body = Jwts.parser()
                     .setSigningKey(new SecretKeySpec(jwtSecretKey.getBytes(), SIGNATURE_ALGORITHM.getJcaName()))
@@ -51,17 +55,16 @@ public class JwtToken {
                     .getBody();
 
             if (!body.getAudience().equals(username)) {
-                // throw new UserTokenException("【用户令牌异常】- 非法令牌，请重新登录！");
-                return "【用户令牌异常】- 令牌与用户名不匹配，请重新登录！";
+                throw new UserTokenException("【用户令牌异常】- 令牌与用户名不匹配，请重新登录！");
             }
-        } catch (ExpiredJwtException expiredJwtException) {
-            // throw new UserTokenException("【用户令牌异常】- Token 已过期，请重新登录！");
-            return "【用户令牌异常】- 令牌已过期，请重新登录！";
-        } catch (Exception e) {
-            // throw new UserTokenException("【用户令牌异常】- JWT 签名与本地计算的签名不匹配，请重新登陆！", e);
-            return "【用户令牌异常】- JWT 签名与本地计算的签名不匹配，请重新登陆！";
-        }
 
-        return null;
+            // 身份验证通过，返回用户角色供拦截器向 Service 层传递
+            return body.getSubject();
+
+        } catch (ExpiredJwtException expiredJwtException) {
+            throw new UserTokenException("【用户令牌异常】- 令牌已过期，请重新登录！");
+        } catch (Exception e) {
+            throw new UserTokenException("【用户令牌异常】- JWT 签名与本地计算的签名不匹配，请重新登陆！", e);
+        }
     }
 }

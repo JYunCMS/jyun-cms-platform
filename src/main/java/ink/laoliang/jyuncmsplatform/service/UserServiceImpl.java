@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 返回 Token 和 不包含密码的用户对象
-        return new LoginUserInfo(JwtToken.createToken(perfectUser.getUsername(), JWT_SECRET_KEY), new User(perfectUser));
+        return new LoginUserInfo(JwtToken.createToken(perfectUser, JWT_SECRET_KEY), new User(perfectUser));
     }
 
     private void checkUsernameFormat(String username) {

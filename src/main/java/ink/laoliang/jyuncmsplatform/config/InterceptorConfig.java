@@ -10,8 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
@@ -34,21 +32,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 return true;
             }
 
-            // 核验 Token
-            String result = JwtToken.verifyToken(request.getHeader("Authorization"), request.getHeader("Username"), JWT_SECRET_KEY);
-            if (result != null) {
-                response.setStatus(401);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\n" +
-                        "    \"timestamp\": \"" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "\",\n" +
-                        "    \"status\": 401,\n" +
-                        "    \"error\": \"Unauthorized\",\n" +
-                        "    \"message\": \"" + result + "\",\n" +
-                        "    \"path\": \"" + request.getRequestURI() + "\"\n" +
-                        "}");
-                return false;
-            }
-
+            // 核验 Token 并获取用户角色
+            String USER_ROLE = JwtToken.verifyTokenAndGetUserRole(request.getHeader("Authorization"), request.getHeader("Username"), JWT_SECRET_KEY);
+            request.setAttribute("USER_ROLE", USER_ROLE);
             return true;
         }
 
