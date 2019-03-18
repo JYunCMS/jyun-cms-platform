@@ -1,5 +1,6 @@
 package ink.laoliang.jyuncmsplatform.service;
 
+import ink.laoliang.jyuncmsplatform.config.ArticleStatus;
 import ink.laoliang.jyuncmsplatform.domain.*;
 import ink.laoliang.jyuncmsplatform.domain.response.ArticleFilterConditions;
 import ink.laoliang.jyuncmsplatform.repository.*;
@@ -236,9 +237,9 @@ public class ArticleServiceImpl implements ArticleService {
             categoryList = categoryRepository.findAll();
             tagList = tagRepository.findAll(ORDER_BY_CREATED_AT);
             allExcludeRecycleBinCount = articleRepository.countByBeDelete(false);
-            releaseCount = articleRepository.countByBeDeleteAndStatus(false, "已发布");
-            pendingReviewCount = articleRepository.countByBeDeleteAndStatus(false, "待审核");
-            draftCount = articleRepository.countByBeDeleteAndStatus(false, "草稿");
+            releaseCount = articleRepository.countByBeDeleteAndStatus(false, ArticleStatus.PUBLISHED);
+            pendingReviewCount = articleRepository.countByBeDeleteAndStatus(false, ArticleStatus.PENDING_REVIEW);
+            draftCount = articleRepository.countByBeDeleteAndStatus(false, ArticleStatus.DRAFT);
             recycleBinCount = articleRepository.countByBeDelete(true);
         }
 
@@ -248,9 +249,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<Article> getArticlesByStatus(String status) {
-        if (status.equals("全部")) {
+        if (status.equals(ArticleStatus.ALL)) {
             return articleRepository.findAllByBeDelete(false, ORDER_BY_CREATED_AT);
-        } else if (status.equals("回收站")) {
+        } else if (status.equals(ArticleStatus.RECYCLE_BIN)) {
             return articleRepository.findAllByBeDelete(true, ORDER_BY_CREATED_AT);
         } else {
             return articleRepository.findAllByBeDeleteAndStatus(false, status, ORDER_BY_CREATED_AT);
@@ -270,9 +271,9 @@ public class ArticleServiceImpl implements ArticleService {
         Map<String, Date> dateMap = QueryDateRange.handle(selectedDate);
 
         // 处理文章状态的查询条件
-        if (selectedStatus.equals("回收站")) {
+        if (selectedStatus.equals(ArticleStatus.RECYCLE_BIN)) {
             beDelete = true;
-        } else if (!selectedStatus.equals("全部") && selectedStatus != null && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
+        } else if (!selectedStatus.equals(ArticleStatus.ALL) && selectedStatus != null && !selectedStatus.equals("null") && !selectedStatus.equals("")) {
             status = selectedStatus;
         }
         if (selectedCategory == null || selectedCategory.equals("null") || selectedCategory.equals("")) {

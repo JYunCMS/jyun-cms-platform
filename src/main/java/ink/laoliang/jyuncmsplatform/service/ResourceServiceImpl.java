@@ -23,7 +23,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final Sort ORDER_BY_CREATED_AT = new Sort(Sort.Direction.DESC, "createdAt");
 
-    @Value("${upload.dir}")
+    @Value("${custom.upload-dir}")
     private String UPLOAD_DIR;
 
     private final ResourceRepository resourceRepository;
