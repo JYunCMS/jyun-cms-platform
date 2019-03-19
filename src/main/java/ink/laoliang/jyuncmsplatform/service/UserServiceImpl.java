@@ -100,16 +100,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginUserInfo login(User user) {
         User perfectUser = userRepository.findById(user.getUsername()).orElse(null);
+
         if (perfectUser == null) {
-            throw new IllegalParameterException("【非法参数异常】- 用户名不存在！");
+            return new LoginUserInfo(false, "【登录失败】- 用户名不存在！", null, null);
         }
 
         if (!perfectUser.getPassword().equals(MD5Encode.encode(user.getPassword()))) {
-            throw new IllegalParameterException("【非法参数异常】- 密码错误！");
+            return new LoginUserInfo(false, "【登录失败】- 密码错误！", null, null);
         }
 
         // 返回 Token 和 不包含密码的用户对象
-        return new LoginUserInfo(JwtToken.createToken(perfectUser, JWT_SECRET_KEY), new User(perfectUser));
+        return new LoginUserInfo(true, "登陆成功", JwtToken.createToken(perfectUser, JWT_SECRET_KEY), new User(perfectUser));
     }
 
     private void checkUsernameFormat(String username) {
