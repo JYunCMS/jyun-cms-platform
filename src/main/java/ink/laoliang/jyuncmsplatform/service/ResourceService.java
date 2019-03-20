@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface ResourceService {
 
-    List<Resource> getResources();
-
     Resource upload(MultipartFile file);
+
+    List<Resource> getResources();
 
     List<Resource> deleteResource(String USER_ROLE, String location);
 

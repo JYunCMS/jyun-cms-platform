@@ -8,6 +8,9 @@ public class UpdatePasswordInfo {
 
     private User user;
 
+    public UpdatePasswordInfo() {
+    }
+
     public UpdatePasswordInfo(String oldPassword, User user) {
         this.oldPassword = oldPassword;
         this.user = user;

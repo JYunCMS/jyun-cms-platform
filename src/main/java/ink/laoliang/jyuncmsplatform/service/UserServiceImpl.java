@@ -105,7 +105,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 返回 Token 和 不包含密码的用户对象
-        return new LoginUserInfo(true, "登陆成功", JwtToken.createToken(perfectUser, JWT_SECRET_KEY), new User(perfectUser));
+        return new LoginUserInfo(true, "登陆成功！", JwtToken.createToken(perfectUser, JWT_SECRET_KEY), new User(perfectUser));
     }
 
     @Override

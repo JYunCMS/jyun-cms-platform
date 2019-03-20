@@ -3,6 +3,8 @@ package ink.laoliang.jyuncmsplatform.service;
 import ink.laoliang.jyuncmsplatform.domain.Category;
 import ink.laoliang.jyuncmsplatform.exception.CategoryUpdateException;
 import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
+import ink.laoliang.jyuncmsplatform.repository.ArticleCategoryRepository;
+import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
 import ink.laoliang.jyuncmsplatform.repository.CategoryRepository;
 import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    private final ArticleRepository articleRepository;
+
+    private final ArticleCategoryRepository articleCategoryRepository;
+
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, ArticleRepository articleRepository, ArticleCategoryRepository articleCategoryRepository) {
         this.categoryRepository = categoryRepository;
+        this.articleRepository = articleRepository;
+        this.articleCategoryRepository = articleCategoryRepository;
     }
 
     @Override
@@ -79,61 +87,34 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = categoryRepository.findByUrlAlias(urlAlias);
-
         // 是否是叶子节点
         if (category.getBeLeaf()) {
             // 是叶子结点
-            // 移动该节点文章到回收站 urlAlias
-            ///////////////////////
-            ///////////////////////
-            ///////////////////////
-            ///////////////////////
-            ///////////////////////
 
+            // 移动该节点文章到回收站
+            articleRepository.moveCategoryArticleToRecycleBin(category.getUrlAlias());
+            // 删除该节点所有 文章-分类 绑定
+            articleCategoryRepository.deleteAllByCategoryUrlAlias(category.getUrlAlias());
+
+            // 更新排序字段 sequence、更新父节点 childrenCount 等操作，最后删除该节点
             handleDeleteNode(category);
-
-            // 刷新所有节点文章数
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-
         } else {
             // 不是叶子结点
-            // 遍历移动该节点下所有叶子节点文章到回收站 urlAliasList
             List<String> leafUrlAliasList = new ArrayList<>();
             getAllLeafUrlAlias(category, leafUrlAliasList);
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-            //////////////////////////////////////////
 
+            for (String leafUrlAlias : leafUrlAliasList) {
+                // 遍历移动该节点下所有叶子节点文章到回收站
+                articleRepository.moveCategoryArticleToRecycleBin(leafUrlAlias);
+                // 遍历移动该节点下所有叶子节点文章到回收站、
+                articleCategoryRepository.deleteAllByCategoryUrlAlias(leafUrlAlias);
+            }
+
+            // 更新排序字段 sequence、更新父节点 childrenCount 等操作，最后删除该节点
             handleDeleteNode(category);
 
             // 删除该节点的所有子节点
             deleteAllSubNode(category);
-
-            // 刷新所有节点文章数
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
-            ////////////////////
         }
 
         return categoryRepository.findAll(ORDER_BY_SEQUENCE);
@@ -187,6 +168,11 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findAll(ORDER_BY_SEQUENCE);
     }
 
+    /**
+     * 更新排序字段 sequence、更新父节点 childrenCount 等操作，最后删除该节点
+     *
+     * @param category 指定的分类
+     */
     private void handleDeleteNode(Category category) {
         // 处理该层级节点排序
         int currentSequence = category.getSequence();

@@ -11,18 +11,29 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
+
+    @Value("${custom.upload-dir}")
+    private String UPLOAD_DIR;
 
     @Value("${custom.jwt-secret-key}")
     private String JWT_SECRET_KEY;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        List<String> excludePathList = new ArrayList<>();
+        excludePathList.add("/hello");
+        excludePathList.add("/upload");
+        excludePathList.add("/" + UPLOAD_DIR + "/**");
+        excludePathList.add("/users/login");
+
         registry.addInterceptor(new ValidateAuthorizationInterceptor())
-                .excludePathPatterns("/users/login");
+                .excludePathPatterns(excludePathList);
     }
 
     private class ValidateAuthorizationInterceptor implements HandlerInterceptor {
@@ -54,11 +65,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
         }
 
         @Override
-        public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         }
 
         @Override
-        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         }
     }
 }

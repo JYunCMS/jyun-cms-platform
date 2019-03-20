@@ -62,11 +62,13 @@ public class TagServiceImpl implements TagService {
             for (ArticleTag articleTag : articleTagList) {
                 // 更新文章 tags 字段
                 Article article = articleRepository.findById(articleTag.getArticleId()).orElse(null);
-                List<String> tempTags = Arrays.asList(article.getTags());
-                List<String> tags = new ArrayList<>(tempTags);
-                tags.remove(name);
-                article.setTags(tags.toArray(new String[0]));
-                articleRepository.save(article);
+                if (article != null) {
+                    List<String> tempTags = Arrays.asList(article.getTags());
+                    List<String> tags = new ArrayList<>(tempTags);
+                    tags.remove(name);
+                    article.setTags(tags.toArray(new String[0]));
+                    articleRepository.save(article);
+                }
 
                 // 删除 article_tag 表对应行
                 articleTagRepository.deleteArticleTagByArticleIdAndTagName(articleTag.getArticleId(), name);

@@ -34,6 +34,13 @@ public class User extends _BaseEntity {
         this.updatedAt = user.updatedAt;
     }
 
+    public User(String username, String password, String nickname, String role) {
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.role = role;
+    }
+
     public String getUsername() {
         return username;
     }

@@ -1,15 +1,29 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import ink.laoliang.jyuncmsplatform.domain.request.InitJYunCmsInfo;
+import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
+import ink.laoliang.jyuncmsplatform.service.HelloService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/")
+@RequestMapping(value = "/hello")
 public class HelloController {
 
+    private final HelloService helloService;
+
+    @Autowired
+    public HelloController(HelloService helloService) {
+        this.helloService = helloService;
+    }
+
     @GetMapping
-    public String sayHello() {
-        return "<center><h1>Hi! Welcome to JYunCMS!</h1></center>";
+    public Boolean isFirstBoot() {
+        return helloService.isFirstBoot();
+    }
+
+    @PostMapping
+    public LoginUserInfo initJYunCms(@RequestBody InitJYunCmsInfo initJYunCmsInfo) {
+        return helloService.initJYunCms(initJYunCmsInfo);
     }
 }

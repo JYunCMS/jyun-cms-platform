@@ -11,4 +11,7 @@ public interface ArticleCategoryRepository extends JpaRepository<ArticleCategory
 
     @Transactional
     void deleteArticleCategoryByArticleIdAndCategoryUrlAlias(Integer articleId, String categoryUrlAlias);
+
+    @Transactional
+    void deleteAllByCategoryUrlAlias(String categoryUrlAlias);
 }

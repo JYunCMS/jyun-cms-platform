@@ -83,16 +83,6 @@ public class ArticleServiceImpl implements ArticleService {
         // 添加一个空标签的 文章-标签 绑定，用于筛选查询
         articleTagRepository.save(new ArticleTag(articleResult.getId(), ""));
 
-        // 3、更新 Resource 表 referenceCount 字段
-        for (Resource imageResource : articleResult.getImages()) {
-            imageResource.setReferenceCount(1);
-            resourceRepository.save(imageResource);
-        }
-        for (Resource accessoryResource : articleResult.getAccessories()) {
-            accessoryResource.setReferenceCount(1);
-            resourceRepository.save(accessoryResource);
-        }
-
         return articleResult;
     }
 
@@ -106,12 +96,6 @@ public class ArticleServiceImpl implements ArticleService {
         Article oldArticle = articleRepository.findById(article.getId()).orElse(null);
         if (oldArticle == null) {
             throw new IllegalParameterException("【非法参数异常】- 欲更新的文章不存在！");
-        }
-
-        // 更新 Resource 表 referenceCount 字段
-        for (Resource imageResource : article.getImages()) {
-            imageResource.setReferenceCount(1);
-            resourceRepository.save(imageResource);
         }
 
         // 对比新旧文章 images 引用列表，新 article 对象只有最新添加的图片列表，
@@ -133,13 +117,18 @@ public class ArticleServiceImpl implements ArticleService {
             Category newCategory = categoryRepository.findByUrlAlias(article.getCategory().getUrlAlias());
             newCategory.setArticleCount(newCategory.getArticleCount() + 1);
             categoryRepository.save(newCategory);
-            Category oldCategory = categoryRepository.findByUrlAlias(oldArticle.getCategory().getUrlAlias());
-            oldCategory.setArticleCount(oldCategory.getArticleCount() - 1);
-            categoryRepository.save(oldCategory);
 
-            ArticleCategory articleCategory = articleCategoryRepository.findByArticleIdAndCategoryUrlAlias(article.getId(), oldCategory.getUrlAlias());
-            articleCategory.setCategoryUrlAlias(newCategory.getUrlAlias());
-            articleCategoryRepository.save(articleCategory);
+            Category oldCategory = categoryRepository.findByUrlAlias(oldArticle.getCategory().getUrlAlias());
+            if (oldCategory != null) {
+                oldCategory.setArticleCount(oldCategory.getArticleCount() - 1);
+                categoryRepository.save(oldCategory);
+
+                ArticleCategory articleCategory = articleCategoryRepository.findByArticleIdAndCategoryUrlAlias(article.getId(), oldCategory.getUrlAlias());
+                articleCategory.setCategoryUrlAlias(newCategory.getUrlAlias());
+                articleCategoryRepository.save(articleCategory);
+            } else {
+                articleCategoryRepository.save(new ArticleCategory(article.getId(), article.getCategory().getUrlAlias()));
+            }
         }
 
         // 处理标签变动，更新标签计数，以及更新 文章-标签 绑定 ArticleTag 表
@@ -186,9 +175,11 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 更新 Category 表 articleCount 字段，删除 ArticleCategory 表 对应文章分类绑定关系
         Category category = categoryRepository.findByUrlAlias(article.getCategory().getUrlAlias());
-        category.setArticleCount(category.getArticleCount() - 1);
-        categoryRepository.save(category);
-        articleCategoryRepository.deleteArticleCategoryByArticleIdAndCategoryUrlAlias(articleId, category.getUrlAlias());
+        if (category != null) {
+            category.setArticleCount(category.getArticleCount() - 1);
+            categoryRepository.save(category);
+            articleCategoryRepository.deleteArticleCategoryByArticleIdAndCategoryUrlAlias(articleId, category.getUrlAlias());
+        }
 
         // 更新 Tag 表 articleCount 字段，删除 ArticleTag 表 对应文章标签绑定关系
         String[] tagNameList = article.getTags();

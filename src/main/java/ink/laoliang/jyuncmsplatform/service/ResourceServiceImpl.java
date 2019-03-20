@@ -36,11 +36,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<Resource> getResources() {
-        return resourceRepository.findAll(ORDER_BY_CREATED_AT);
-    }
-
-    @Override
     public Resource upload(MultipartFile file) {
         // 原始文件名
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
@@ -81,7 +76,12 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         // 存库，数据库标识
-        return resourceRepository.save(new Resource(location.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 0));
+        return resourceRepository.save(new Resource(location.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 1));
+    }
+
+    @Override
+    public List<Resource> getResources() {
+        return resourceRepository.findAll(ORDER_BY_CREATED_AT);
     }
 
     @Override

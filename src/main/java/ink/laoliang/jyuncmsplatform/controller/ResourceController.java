@@ -5,7 +5,6 @@ import ink.laoliang.jyuncmsplatform.domain.response.ResourceFilterConditions;
 import ink.laoliang.jyuncmsplatform.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,11 +22,6 @@ public class ResourceController {
     @GetMapping
     public List<Resource> getResources() {
         return resourceService.getResources();
-    }
-
-    @PostMapping
-    public Resource upload(@RequestParam MultipartFile file) {
-        return resourceService.upload(file);
     }
 
     @DeleteMapping
