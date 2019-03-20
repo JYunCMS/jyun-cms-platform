@@ -1,7 +1,7 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
 import ink.laoliang.jyuncmsplatform.domain.User;
-import ink.laoliang.jyuncmsplatform.domain.request.UpdateUserInfo;
+import ink.laoliang.jyuncmsplatform.domain.request.UpdatePasswordInfo;
 import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
 import ink.laoliang.jyuncmsplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,25 +26,42 @@ public class UserController {
     }
 
     @PostMapping
-    public User addNewUser(@RequestAttribute String USER_ROLE,
-                           @RequestBody User user) {
+    public List<User> addNewUser(@RequestAttribute String USER_ROLE,
+                                 @RequestBody User user) {
         return userService.addNewUser(USER_ROLE, user);
     }
 
     @PutMapping
-    public User updateUser(@RequestAttribute String USER_ROLE,
-                           @RequestBody UpdateUserInfo updateUserInfo) {
-        return userService.updateUser(USER_ROLE, updateUserInfo);
+    public List<User> updateUser(@RequestAttribute String USER_ROLE,
+                                 @RequestBody User user) {
+        return userService.updateUser(USER_ROLE, user);
     }
 
     @DeleteMapping
-    public void deleteUser(@RequestAttribute String USER_ROLE,
-                           @RequestParam String username) {
-        userService.deleteUser(USER_ROLE, username);
+    public List<User> deleteUser(@RequestAttribute String USER_ROLE,
+                                 @RequestParam String username) {
+        return userService.deleteUser(USER_ROLE, username);
     }
 
     @PostMapping(value = "/login")
     public LoginUserInfo login(@RequestBody User user) {
         return userService.login(user);
+    }
+
+    @PutMapping(value = "/self-info")
+    public User updateSelfInfo(@RequestAttribute String USER_ROLE,
+                             @RequestBody User user) {
+        return userService.updateSelfInfo(USER_ROLE, user);
+    }
+
+    @PutMapping(value = "/self-password")
+    public User updateSelfPassword(@RequestBody UpdatePasswordInfo updatePasswordInfo){
+        return userService.updateSelfPassword(updatePasswordInfo);
+    }
+
+    @PutMapping(value = "/reset-password")
+    public User resetPassword(@RequestAttribute String USER_ROLE,
+                              @RequestBody User user){
+        return userService.resetPassword(USER_ROLE, user);
     }
 }

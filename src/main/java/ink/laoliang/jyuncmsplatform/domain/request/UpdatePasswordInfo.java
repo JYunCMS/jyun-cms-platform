@@ -2,13 +2,13 @@ package ink.laoliang.jyuncmsplatform.domain.request;
 
 import ink.laoliang.jyuncmsplatform.domain.User;
 
-public class UpdateUserInfo {
+public class UpdatePasswordInfo {
 
     private String oldPassword;
 
     private User user;
 
-    public UpdateUserInfo(String oldPassword, User user) {
+    public UpdatePasswordInfo(String oldPassword, User user) {
         this.oldPassword = oldPassword;
         this.user = user;
     }
