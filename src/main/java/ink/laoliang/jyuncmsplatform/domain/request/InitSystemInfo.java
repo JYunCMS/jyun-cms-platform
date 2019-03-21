@@ -1,13 +1,13 @@
 package ink.laoliang.jyuncmsplatform.domain.request;
 
-public class InitJYunCmsInfo {
+public class InitSystemInfo {
 
     private String adminPassword;
 
-    public InitJYunCmsInfo() {
+    public InitSystemInfo() {
     }
 
-    public InitJYunCmsInfo(String adminPassword) {
+    public InitSystemInfo(String adminPassword) {
         this.adminPassword = adminPassword;
     }
 

@@ -1,6 +1,6 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
-import ink.laoliang.jyuncmsplatform.domain.request.InitJYunCmsInfo;
+import ink.laoliang.jyuncmsplatform.domain.request.InitSystemInfo;
 import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
 import ink.laoliang.jyuncmsplatform.service.HelloService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,12 @@ public class HelloController {
     }
 
     @GetMapping
-    public Boolean isFirstBoot() {
-        return helloService.isFirstBoot();
+    public Boolean alreadyInitSystem() {
+        return helloService.alreadyInitSystem();
     }
 
     @PostMapping
-    public LoginUserInfo initJYunCms(@RequestBody InitJYunCmsInfo initJYunCmsInfo) {
-        return helloService.initJYunCms(initJYunCmsInfo);
+    public LoginUserInfo initSystem(@RequestBody InitSystemInfo initSystemInfo) {
+        return helloService.initSystem(initSystemInfo);
     }
 }

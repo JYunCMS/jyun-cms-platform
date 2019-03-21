@@ -1,9 +1,8 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.User;
-import ink.laoliang.jyuncmsplatform.domain.request.InitJYunCmsInfo;
+import ink.laoliang.jyuncmsplatform.domain.request.InitSystemInfo;
 import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
-import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
 import ink.laoliang.jyuncmsplatform.repository.UserRepository;
 import ink.laoliang.jyuncmsplatform.util.JwtToken;
 import ink.laoliang.jyuncmsplatform.util.MD5Encode;
@@ -28,20 +27,20 @@ public class HelloServiceImpl implements HelloService {
     }
 
     @Override
-    public Boolean isFirstBoot() {
-        return userRepository.findById("admin").orElse(null) == null;
+    public Boolean alreadyInitSystem() {
+        return userRepository.findById("admin").orElse(null) != null;
     }
 
     @Override
-    public LoginUserInfo initJYunCms(InitJYunCmsInfo initJYunCmsInfo) {
-        if (initJYunCmsInfo.getAdminPassword() == null || initJYunCmsInfo.getAdminPassword().trim().equals("")) {
-            throw new IllegalParameterException("【非法参数异常】- 密码不能为空！");
+    public LoginUserInfo initSystem(InitSystemInfo initSystemInfo) {
+        if (initSystemInfo.getAdminPassword() == null || initSystemInfo.getAdminPassword().trim().equals("")) {
+            return new LoginUserInfo(false, "密码不能为空！", null, null);
         }
-        if (!Pattern.compile("^\\w{6,20}$").matcher(initJYunCmsInfo.getAdminPassword()).matches()) {
-            throw new IllegalParameterException("【非法参数异常】- 密码要求 6-20 位常规 ASCII 字符！");
+        if (!Pattern.compile("^\\w{6,20}$").matcher(initSystemInfo.getAdminPassword()).matches()) {
+            return new LoginUserInfo(false, "密码要求 6-20 位常规 ASCII 字符！", null, null);
         }
 
-        User adminUser = userRepository.save(new User("admin", MD5Encode.encode(initJYunCmsInfo.getAdminPassword()), "", UserRole.SUPER_ADMIN));
+        User adminUser = userRepository.save(new User("admin", MD5Encode.encode(initSystemInfo.getAdminPassword()), "", UserRole.SUPER_ADMIN));
         return new LoginUserInfo(true, "超级管理员已创建！", JwtToken.createToken(adminUser, JWT_SECRET_KEY), new User(adminUser));
     }
 }
