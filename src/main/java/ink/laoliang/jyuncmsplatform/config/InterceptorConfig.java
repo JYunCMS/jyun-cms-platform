@@ -27,10 +27,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         List<String> excludePathList = new ArrayList<>();
-        excludePathList.add("/hello");
-        excludePathList.add("/upload");
-        excludePathList.add("/" + UPLOAD_DIR + "/**");
-        excludePathList.add("/users/login");
+        excludePathList.add("/hello"); // 初始化接口
+        excludePathList.add("/upload"); // 媒体资源上传接口
+        excludePathList.add("/" + UPLOAD_DIR + "/**"); // 媒体资源存储地址
+        excludePathList.add("/users/login"); // 后台登录接口
+        excludePathList.add("/public/**"); // 前台应用的公开接口
 
         registry.addInterceptor(new ValidateAuthorizationInterceptor())
                 .excludePathPatterns(excludePathList);
