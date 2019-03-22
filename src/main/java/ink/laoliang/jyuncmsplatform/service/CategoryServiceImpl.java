@@ -1,11 +1,13 @@
 package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Category;
+import ink.laoliang.jyuncmsplatform.domain.Resource;
 import ink.laoliang.jyuncmsplatform.exception.CategoryUpdateException;
 import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.ArticleCategoryRepository;
 import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
 import ink.laoliang.jyuncmsplatform.repository.CategoryRepository;
+import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
 import ink.laoliang.jyuncmsplatform.util.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -15,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -28,11 +31,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final ArticleCategoryRepository articleCategoryRepository;
 
+    private final ResourceRepository resourceRepository;
+
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, ArticleRepository articleRepository, ArticleCategoryRepository articleCategoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, ArticleRepository articleRepository, ArticleCategoryRepository articleCategoryRepository, ResourceRepository resourceRepository) {
         this.categoryRepository = categoryRepository;
         this.articleRepository = articleRepository;
         this.articleCategoryRepository = articleCategoryRepository;
+        this.resourceRepository = resourceRepository;
     }
 
     @Override
@@ -58,24 +64,47 @@ public class CategoryServiceImpl implements CategoryService {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有更新分类目录的权限！");
         }
 
-        Category categoryModel = categoryRepository.findByUrlAlias(category.getUrlAlias());
+        Category oldCategory = categoryRepository.findById(category.getUrlAlias()).orElse(null);
+        if (oldCategory == null) {
+            throw new CategoryUpdateException("【分类更新异常】- 指定分类目录不存在");
+        }
+
+        // 更新 Resource 表 referenceCount 字段
+        for (Resource imageResource : category.getCustomPageImages()) {
+            imageResource.setBeReference(true);
+            resourceRepository.save(imageResource);
+        }
+
+        // 对比新旧自定义介绍页 images 引用列表，新 category 对象只有最新添加的图片列表，
+        // 所以需要将旧 category 中还在用的图片引用添加进新的，不再用的对应资源计数 -1
+        for (Resource imageResource : oldCategory.getCustomPageImages()) {
+            if (category.getCustomPage().contains(imageResource.getLocation())) {
+                List<Resource> tempImageResourceList = Arrays.asList(category.getCustomPageImages());
+                List<Resource> imageResourceList = new ArrayList<>(tempImageResourceList);
+                imageResourceList.add(imageResource);
+                category.setCustomPageImages(imageResourceList.toArray(new Resource[0]));
+            } else {
+                imageResource.setBeReference(true);
+                resourceRepository.save(imageResource);
+            }
+        }
 
         try {
-            // 遍历传入的 category，将不空的（欲更新的）字段更新到 categoryModel 并存库
+            // 遍历传入的 category，将不空的（欲更新的）字段更新到 oldCategory 并存库
             for (Field field : category.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 if (field.get(category) != null) {
                     String methodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
                     Class<?> methodParameterType = field.get(category).getClass();
-                    Method method = categoryModel.getClass().getMethod(methodName, methodParameterType);
-                    method.invoke(categoryModel, field.get(category));
+                    Method method = oldCategory.getClass().getMethod(methodName, methodParameterType);
+                    method.invoke(oldCategory, field.get(category));
                 }
             }
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new CategoryUpdateException("【分类更新异常】", e);
         }
 
-        categoryRepository.save(categoryModel);
+        categoryRepository.save(oldCategory);
         return categoryRepository.findAll(ORDER_BY_SEQUENCE);
     }
 

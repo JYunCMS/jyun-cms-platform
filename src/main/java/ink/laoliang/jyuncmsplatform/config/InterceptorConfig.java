@@ -26,6 +26,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 指定跳过拦截器的接口
+        // 【注意】忽略拦截的接口不能够抛异常，否则将请求 /error 导致下方 preHandle 被执行返回 401
         List<String> excludePathList = new ArrayList<>();
         excludePathList.add("/hello"); // 初始化接口
         excludePathList.add("/upload"); // 媒体资源上传接口

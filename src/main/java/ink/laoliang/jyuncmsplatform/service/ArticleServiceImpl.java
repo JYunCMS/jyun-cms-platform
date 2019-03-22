@@ -83,6 +83,16 @@ public class ArticleServiceImpl implements ArticleService {
         // 添加一个空标签的 文章-标签 绑定，用于筛选查询
         articleTagRepository.save(new ArticleTag(articleResult.getId(), ""));
 
+        // 3、更新 Resource 表 referenceCount 字段
+        for (Resource imageResource : articleResult.getImages()) {
+            imageResource.setBeReference(true);
+            resourceRepository.save(imageResource);
+        }
+        for (Resource accessoryResource : articleResult.getAccessories()) {
+            accessoryResource.setBeReference(true);
+            resourceRepository.save(accessoryResource);
+        }
+
         return articleResult;
     }
 
@@ -98,6 +108,12 @@ public class ArticleServiceImpl implements ArticleService {
             throw new IllegalParameterException("【非法参数异常】- 欲更新的文章不存在！");
         }
 
+        // 更新 Resource 表 referenceCount 字段
+        for (Resource imageResource : article.getImages()) {
+            imageResource.setBeReference(true);
+            resourceRepository.save(imageResource);
+        }
+
         // 对比新旧文章 images 引用列表，新 article 对象只有最新添加的图片列表，
         // 所以需要将旧 article 中还在用的图片引用添加进新的，不再用的对应资源计数 -1
         for (Resource imageResource : oldArticle.getImages()) {
@@ -107,7 +123,7 @@ public class ArticleServiceImpl implements ArticleService {
                 imageResourceList.add(imageResource);
                 article.setImages(imageResourceList.toArray(new Resource[0]));
             } else {
-                imageResource.setReferenceCount(imageResource.getReferenceCount() - 1);
+                imageResource.setBeReference(false);
                 resourceRepository.save(imageResource);
             }
         }
@@ -196,14 +212,18 @@ public class ArticleServiceImpl implements ArticleService {
 
         // 通过 images 和 accessories 字段更新 Resource 表的 referenceCount 字段
         for (Resource imageResource : article.getImages()) {
-            Resource resource = resourceRepository.findByLocation(imageResource.getLocation());
-            resource.setReferenceCount(resource.getReferenceCount() - 1);
-            resourceRepository.save(resource);
+            Resource resource = resourceRepository.findById(imageResource.getLocation()).orElse(null);
+            if (resource != null) {
+                resource.setBeReference(false);
+                resourceRepository.save(resource);
+            }
         }
         for (Resource accessoryResource : article.getAccessories()) {
-            Resource resource = resourceRepository.findByLocation(accessoryResource.getLocation());
-            resource.setReferenceCount(resource.getReferenceCount() - 1);
-            resourceRepository.save(resource);
+            Resource resource = resourceRepository.findById(accessoryResource.getLocation()).orElse(null);
+            if (resource != null) {
+                resource.setBeReference(false);
+                resourceRepository.save(resource);
+            }
         }
     }
 

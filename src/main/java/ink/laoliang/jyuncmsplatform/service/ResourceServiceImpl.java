@@ -76,7 +76,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         // 存库，数据库标识
-        return resourceRepository.save(new Resource(location.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, 1));
+        return resourceRepository.save(new Resource(location.toString().replace('\\', '/'), originalFilename, storageFilename, fileType, fileSize, false));
     }
 
     @Override

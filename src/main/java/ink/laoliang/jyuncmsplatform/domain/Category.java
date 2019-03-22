@@ -40,6 +40,9 @@ public class Category extends _BaseEntity implements Serializable {
     @Column(columnDefinition = "longtext")
     private String customPage;
 
+    @Column(columnDefinition = "blob")
+    private Resource[] customPageImages;
+
     public Category() {
     }
 
@@ -113,5 +116,13 @@ public class Category extends _BaseEntity implements Serializable {
 
     public void setCustomPage(String customPage) {
         this.customPage = customPage;
+    }
+
+    public Resource[] getCustomPageImages() {
+        return customPageImages;
+    }
+
+    public void setCustomPageImages(Resource[] customPageImages) {
+        this.customPageImages = customPageImages;
     }
 }

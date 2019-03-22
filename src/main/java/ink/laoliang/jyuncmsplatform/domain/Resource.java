@@ -27,8 +27,8 @@ public class Resource extends _BaseEntity implements Serializable {
     @Column(nullable = false)
     private String fileSize;
 
-    @Column(nullable = false, columnDefinition = "bigint unsigned")
-    private Integer referenceCount;
+    @Column(nullable = false)
+    private Boolean beReference;
 
     public Resource() {
     }
@@ -39,18 +39,18 @@ public class Resource extends _BaseEntity implements Serializable {
         this.storageFilename = resource.storageFilename;
         this.fileType = resource.fileType;
         this.fileSize = resource.fileSize;
-        this.referenceCount = resource.referenceCount;
+        this.beReference = resource.beReference;
         this.createdAt = resource.createdAt;
         this.updatedAt = resource.updatedAt;
     }
 
-    public Resource(String location, String originalFilename, String storageFilename, String fileType, String fileSize, Integer referenceCount) {
+    public Resource(String location, String originalFilename, String storageFilename, String fileType, String fileSize, Boolean beReference) {
         this.location = location;
         this.originalFilename = originalFilename;
         this.storageFilename = storageFilename;
         this.fileType = fileType;
         this.fileSize = fileSize;
-        this.referenceCount = referenceCount;
+        this.beReference = beReference;
     }
 
     public String getLocation() {
@@ -93,11 +93,11 @@ public class Resource extends _BaseEntity implements Serializable {
         this.fileSize = fileSize;
     }
 
-    public Integer getReferenceCount() {
-        return referenceCount;
+    public Boolean getBeReference() {
+        return beReference;
     }
 
-    public void setReferenceCount(Integer referenceCount) {
-        this.referenceCount = referenceCount;
+    public void setBeReference(Boolean beReference) {
+        this.beReference = beReference;
     }
 }
