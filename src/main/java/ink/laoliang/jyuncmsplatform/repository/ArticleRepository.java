@@ -1,6 +1,8 @@
 package ink.laoliang.jyuncmsplatform.repository;
 
 import ink.laoliang.jyuncmsplatform.domain.Article;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,4 +30,7 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
     @Transactional
     @Query(value = "update Article article set article.beDelete = true where article.id in (select articleCategory.articleId from ArticleCategory articleCategory where articleCategory.categoryUrlAlias = :categoryUrlAlias)")
     void moveCategoryArticleToRecycleBin(@Param("categoryUrlAlias") String categoryUrlAlias);
+
+    @Query(value = "select new Article(article) from Article article where article.id in (select articleCategory.articleId from ArticleCategory articleCategory where articleCategory.categoryUrlAlias = :categoryUrlAlias) and article.beDelete = false and article.status = '已发布'")
+    Page<Article> getArticlesByCategory(Pageable pageable, @Param("categoryUrlAlias") String categoryUrlAlias);
 }
