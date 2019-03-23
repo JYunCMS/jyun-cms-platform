@@ -33,4 +33,9 @@ public class PublicController {
                                                @RequestParam Integer size) {
         return publicService.getArticlesByCategory(categoryUrlAlias, page, size);
     }
+
+    @GetMapping(value = "/article-by-id")
+    public Article getArticleById(@RequestParam Integer id) {
+        return publicService.getArticleById(id);
+    }
 }

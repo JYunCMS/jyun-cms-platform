@@ -34,4 +34,10 @@ public class PublicServiceImpl implements PublicService {
         Pageable pageable = PageRequest.of(page, size, new Sort(Sort.Direction.DESC, "createdAt"));
         return articleRepository.getArticlesByCategory(pageable, categoryUrlAlias).getContent();
     }
+
+    @Override
+    public Article getArticleById(Integer id) {
+        System.out.println(id);
+        return articleRepository.findById(id).orElse(new Article());
+    }
 }

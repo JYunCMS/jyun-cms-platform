@@ -10,4 +10,6 @@ public interface PublicService {
     List<Category> getCategories();
 
     List<Article> getArticlesByCategory(String categoryUrlAlias, Integer page, Integer size);
+
+    Article getArticleById(Integer id);
 }
