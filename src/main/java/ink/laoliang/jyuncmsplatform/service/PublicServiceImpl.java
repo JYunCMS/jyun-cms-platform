@@ -2,7 +2,9 @@ package ink.laoliang.jyuncmsplatform.service;
 
 import ink.laoliang.jyuncmsplatform.domain.Article;
 import ink.laoliang.jyuncmsplatform.domain.Category;
+import ink.laoliang.jyuncmsplatform.domain.Options;
 import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
+import ink.laoliang.jyuncmsplatform.repository.OptionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,9 @@ public class PublicServiceImpl implements PublicService {
     private final CategoryService categoryService;
 
     private final ArticleRepository articleRepository;
+
+    @Autowired
+    private OptionsRepository optionsRepository;
 
     @Autowired
     public PublicServiceImpl(CategoryService categoryService, ArticleRepository articleRepository) {
@@ -38,5 +43,10 @@ public class PublicServiceImpl implements PublicService {
     @Override
     public Article getArticleById(Integer id) {
         return articleRepository.findById(id).orElse(new Article());
+    }
+
+    @Override
+    public List<Options> getOptions() {
+        return optionsRepository.findAllByBePublic(true);
     }
 }

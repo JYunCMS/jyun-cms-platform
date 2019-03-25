@@ -8,7 +8,7 @@ import ink.laoliang.jyuncmsplatform.domain.options.HomeCarouselImages;
 import ink.laoliang.jyuncmsplatform.domain.options._OptionValue;
 import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
 import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
-import ink.laoliang.jyuncmsplatform.repository.OptionRepository;
+import ink.laoliang.jyuncmsplatform.repository.OptionsRepository;
 import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,19 +19,19 @@ import java.util.List;
 @Service
 public class OptionServiceImpl implements OptionService {
 
-    private final OptionRepository optionRepository;
+    private final OptionsRepository optionsRepository;
 
     private final ResourceRepository resourceRepository;
 
     @Autowired
-    public OptionServiceImpl(OptionRepository optionRepository, ResourceRepository resourceRepository) {
-        this.optionRepository = optionRepository;
+    public OptionServiceImpl(OptionsRepository optionsRepository, ResourceRepository resourceRepository) {
+        this.optionsRepository = optionsRepository;
         this.resourceRepository = resourceRepository;
     }
 
     @Override
     public List<Options> getOptions() {
-        return optionRepository.findAll();
+        return optionsRepository.findAll();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class OptionServiceImpl implements OptionService {
         }
 
         // 不再使用的轮播图资源更新引用状态为 false
-        Options carouselImageOption = optionRepository.findById(OptionsFields.HOME_CAROUSEL_IMAGES).orElse(null);
+        Options carouselImageOption = optionsRepository.findById(OptionsFields.HOME_CAROUSEL_IMAGES).orElse(null);
         if (carouselImageOption != null) {
             for (HomeCarouselImages tempCarouselImage : (List<HomeCarouselImages>) carouselImageOption.getValue().getContent()) {
                 List<String> stringHomeCarouselImages = new ArrayList<>();
@@ -70,7 +70,7 @@ public class OptionServiceImpl implements OptionService {
             }
         }
 
-        Options option = optionRepository.save(new Options(OptionsFields.HOME_CAROUSEL_IMAGES, new _OptionValue<>(homeCarouselImages)));
+        Options option = optionsRepository.save(new Options(OptionsFields.HOME_CAROUSEL_IMAGES, new _OptionValue<>(homeCarouselImages), true));
         return (List<HomeCarouselImages>) option.getValue().getContent();
     }
 }

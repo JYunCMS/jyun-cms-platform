@@ -19,12 +19,16 @@ public class Options implements Serializable {
     @Column(columnDefinition = "blob")
     private _OptionValue value;
 
+    @Column(nullable = false)
+    private Boolean bePublic;
+
     public Options() {
     }
 
-    public Options(String name, _OptionValue value) {
+    public Options(String name, _OptionValue value, Boolean bePublic) {
         this.name = name;
         this.value = value;
+        this.bePublic = bePublic;
     }
 
     public String getName() {
@@ -41,5 +45,13 @@ public class Options implements Serializable {
 
     public void setValue(_OptionValue value) {
         this.value = value;
+    }
+
+    public Boolean getBePublic() {
+        return bePublic;
+    }
+
+    public void setBePublic(Boolean bePublic) {
+        this.bePublic = bePublic;
     }
 }
