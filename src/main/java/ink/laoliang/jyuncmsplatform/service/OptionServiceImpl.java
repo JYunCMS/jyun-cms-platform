@@ -4,9 +4,7 @@ import ink.laoliang.jyuncmsplatform.config.OptionsFields;
 import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import ink.laoliang.jyuncmsplatform.domain.Options;
 import ink.laoliang.jyuncmsplatform.domain.Resource;
-import ink.laoliang.jyuncmsplatform.domain.options.FriendlyLinks;
-import ink.laoliang.jyuncmsplatform.domain.options.HomeCarouselImages;
-import ink.laoliang.jyuncmsplatform.domain.options._OptionValue;
+import ink.laoliang.jyuncmsplatform.domain.options.*;
 import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
 import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.OptionsRepository;
@@ -33,6 +31,39 @@ public class OptionServiceImpl implements OptionService {
     @Override
     public List<Options> getOptions() {
         return optionsRepository.findAll();
+    }
+
+    @Override
+    public SiteTitle setSiteTitle(String USER_ROLE, SiteTitle siteTitle) {
+        // 验证用户角色权限
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < 3) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置首页轮播图，请联系更高等级的管理员！");
+        }
+
+        Options option = optionsRepository.save(new Options(OptionsFields.SITE_TITLE, new _OptionValue<>(siteTitle), true));
+        return (SiteTitle) option.getValue().getContent();
+    }
+
+    @Override
+    public CopyrightInfo setCopyrightInfo(String USER_ROLE, CopyrightInfo copyrightInfo) {
+        // 验证用户角色权限
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < 3) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置首页轮播图，请联系更高等级的管理员！");
+        }
+
+        Options option = optionsRepository.save(new Options(OptionsFields.COPYRIGHT_INFO, new _OptionValue<>(copyrightInfo), true));
+        return (CopyrightInfo) option.getValue().getContent();
+    }
+
+    @Override
+    public WebsiteFilingInfo setWebsiteFilingInfo(String USER_ROLE, WebsiteFilingInfo websiteFilingInfo) {
+        // 验证用户角色权限
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < 3) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置首页轮播图，请联系更高等级的管理员！");
+        }
+
+        Options option = optionsRepository.save(new Options(OptionsFields.WEBSITE_FILING_INFO, new _OptionValue<>(websiteFilingInfo), true));
+        return (WebsiteFilingInfo) option.getValue().getContent();
     }
 
     @Override
