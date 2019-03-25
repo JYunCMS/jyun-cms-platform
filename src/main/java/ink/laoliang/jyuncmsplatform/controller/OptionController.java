@@ -1,6 +1,7 @@
 package ink.laoliang.jyuncmsplatform.controller;
 
 import ink.laoliang.jyuncmsplatform.domain.Options;
+import ink.laoliang.jyuncmsplatform.domain.options.FriendlyLinks;
 import ink.laoliang.jyuncmsplatform.domain.options.HomeCarouselImages;
 import ink.laoliang.jyuncmsplatform.service.OptionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,11 @@ public class OptionController {
     public List<HomeCarouselImages> setHomeCarouselImages(@RequestAttribute String USER_ROLE,
                                                           @RequestBody List<HomeCarouselImages> homeCarouselImages) {
         return optionService.setHomeCarouselImages(USER_ROLE, homeCarouselImages);
+    }
+
+    @PostMapping(value = "/friendly-links")
+    public List<FriendlyLinks> setFriendlyLinks(@RequestAttribute String USER_ROLE,
+                                                @RequestBody List<FriendlyLinks> friendlyLinks) {
+        return optionService.setFriendlyLinks(USER_ROLE, friendlyLinks);
     }
 }

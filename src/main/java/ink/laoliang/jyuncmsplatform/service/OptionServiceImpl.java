@@ -4,6 +4,7 @@ import ink.laoliang.jyuncmsplatform.config.OptionsFields;
 import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import ink.laoliang.jyuncmsplatform.domain.Options;
 import ink.laoliang.jyuncmsplatform.domain.Resource;
+import ink.laoliang.jyuncmsplatform.domain.options.FriendlyLinks;
 import ink.laoliang.jyuncmsplatform.domain.options.HomeCarouselImages;
 import ink.laoliang.jyuncmsplatform.domain.options._OptionValue;
 import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
@@ -38,7 +39,7 @@ public class OptionServiceImpl implements OptionService {
     public List<HomeCarouselImages> setHomeCarouselImages(String USER_ROLE, List<HomeCarouselImages> homeCarouselImages) {
         // 验证用户角色权限
         if (UserRoleFields.getUserRoleLevel(USER_ROLE) < 2) {
-            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置首页轮播图！");
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置首页轮播图，请联系更高等级的管理员！");
         }
 
         // 标注资源为引用状态
@@ -72,5 +73,16 @@ public class OptionServiceImpl implements OptionService {
 
         Options option = optionsRepository.save(new Options(OptionsFields.HOME_CAROUSEL_IMAGES, new _OptionValue<>(homeCarouselImages), true));
         return (List<HomeCarouselImages>) option.getValue().getContent();
+    }
+
+    @Override
+    public List<FriendlyLinks> setFriendlyLinks(String USER_ROLE, List<FriendlyLinks> friendlyLinks) {
+        // 验证用户角色权限
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < 2) {
+            throw new UserRolePermissionException("【用户角色权限异常】- 当前用户不能设置站点友情链接，请联系更高等级的管理员！");
+        }
+
+        Options option = optionsRepository.save(new Options(OptionsFields.FRIENDLY_LINKS, new _OptionValue<>(friendlyLinks), true));
+        return (List<FriendlyLinks>) option.getValue().getContent();
     }
 }
