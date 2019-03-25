@@ -7,7 +7,7 @@ import ink.laoliang.jyuncmsplatform.exception.IllegalParameterException;
 import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.*;
 import ink.laoliang.jyuncmsplatform.util.QueryDateRange;
-import ink.laoliang.jyuncmsplatform.util.UserRole;
+import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -51,7 +51,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article newArticle(String USER_ROLE, Article article) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有发布文章的权限，可提交文章并联系管理员审核！");
         }
 
@@ -99,7 +99,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article updateArticle(String USER_ROLE, Article article) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1 && article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有发布文章的权限，可联系管理员审核并发布！");
         }
 
@@ -179,7 +179,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public void deleteArticle(String USER_ROLE, Integer articleId) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除文章的权限！");
         }
 
@@ -324,7 +324,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article moveToRecycleBin(String USER_ROLE, Boolean beDelete, Article article) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有将文章移动到回收站的权限！");
         }
 

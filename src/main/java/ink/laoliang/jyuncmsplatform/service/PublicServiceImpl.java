@@ -37,7 +37,6 @@ public class PublicServiceImpl implements PublicService {
 
     @Override
     public Article getArticleById(Integer id) {
-        System.out.println(id);
         return articleRepository.findById(id).orElse(new Article());
     }
 }

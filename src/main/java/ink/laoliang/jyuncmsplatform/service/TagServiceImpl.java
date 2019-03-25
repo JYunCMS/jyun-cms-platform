@@ -8,7 +8,7 @@ import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
 import ink.laoliang.jyuncmsplatform.repository.ArticleTagRepository;
 import ink.laoliang.jyuncmsplatform.repository.TagRepository;
-import ink.laoliang.jyuncmsplatform.util.UserRole;
+import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public List<Tag> deleteTag(String USER_ROLE, String name) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= 1) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有删除标签的权限！");
         }
 

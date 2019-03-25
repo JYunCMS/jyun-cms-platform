@@ -6,7 +6,7 @@ import ink.laoliang.jyuncmsplatform.domain.response.LoginUserInfo;
 import ink.laoliang.jyuncmsplatform.repository.UserRepository;
 import ink.laoliang.jyuncmsplatform.util.JwtToken;
 import ink.laoliang.jyuncmsplatform.util.MD5Encode;
-import ink.laoliang.jyuncmsplatform.util.UserRole;
+import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class HelloServiceImpl implements HelloService {
             return new LoginUserInfo(false, "密码要求 6-20 位常规 ASCII 字符！", null, null);
         }
 
-        User adminUser = userRepository.save(new User("admin", MD5Encode.encode(initSystemInfo.getAdminPassword()), "", UserRole.SUPER_ADMIN));
+        User adminUser = userRepository.save(new User("admin", MD5Encode.encode(initSystemInfo.getAdminPassword()), "", UserRoleFields.SUPER_ADMIN));
         return new LoginUserInfo(true, "超级管理员已创建！", JwtToken.createToken(adminUser, JWT_SECRET_KEY), new User(adminUser));
     }
 }

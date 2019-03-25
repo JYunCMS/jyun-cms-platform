@@ -1,6 +1,6 @@
-package ink.laoliang.jyuncmsplatform.util;
+package ink.laoliang.jyuncmsplatform.config;
 
-public class UserRole {
+public class UserRoleFields {
 
     public static final String SUPER_ADMIN = "超级管理员";
 

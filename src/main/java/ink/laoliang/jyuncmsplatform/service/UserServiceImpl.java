@@ -8,7 +8,7 @@ import ink.laoliang.jyuncmsplatform.exception.UserRolePermissionException;
 import ink.laoliang.jyuncmsplatform.repository.UserRepository;
 import ink.laoliang.jyuncmsplatform.util.JwtToken;
 import ink.laoliang.jyuncmsplatform.util.MD5Encode;
-import ink.laoliang.jyuncmsplatform.util.UserRole;
+import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> addNewUser(String USER_ROLE, User user) {
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) < UserRole.getUserRoleLevel(user.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < UserRoleFields.getUserRoleLevel(user.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 不能创建比当前用户角色等级更高的用户！");
         }
 
@@ -62,10 +62,10 @@ public class UserServiceImpl implements UserService {
         }
 
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= UserRole.getUserRoleLevel(oldUser.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= UserRoleFields.getUserRoleLevel(oldUser.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 只能更新角色等级比自己低的用户信息！");
         }
-        if (UserRole.getUserRoleLevel(USER_ROLE) < UserRole.getUserRoleLevel(user.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < UserRoleFields.getUserRoleLevel(user.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 不能将角色修改为比自己等级更高的角色！");
         }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= UserRole.getUserRoleLevel(user.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= UserRoleFields.getUserRoleLevel(user.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 只能删除比当前用户角色等级更低的用户！");
         }
 
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalParameterException("【非法参数异常】- 用户 " + user.getUsername() + " 不存在！");
         }
 
-        if (UserRole.getUserRoleLevel(USER_ROLE) < UserRole.getUserRoleLevel(user.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) < UserRoleFields.getUserRoleLevel(user.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 不能选择比当前用户角色等级更高的角色！");
         }
 
@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService {
         checkPasswordFormat(user.getPassword());
 
         // 验证用户角色权限
-        if (UserRole.getUserRoleLevel(USER_ROLE) <= UserRole.getUserRoleLevel(user.getRole())) {
+        if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= UserRoleFields.getUserRoleLevel(user.getRole())) {
             throw new UserRolePermissionException("【用户角色权限异常】- 只能重置角色等级比自己低的用户密码！");
         }
 
