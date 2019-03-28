@@ -1,5 +1,6 @@
 package ink.laoliang.jyuncmsplatform.service;
 
+import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import ink.laoliang.jyuncmsplatform.domain.Category;
 import ink.laoliang.jyuncmsplatform.domain.Resource;
 import ink.laoliang.jyuncmsplatform.exception.CategoryUpdateException;
@@ -8,7 +9,6 @@ import ink.laoliang.jyuncmsplatform.repository.ArticleCategoryRepository;
 import ink.laoliang.jyuncmsplatform.repository.ArticleRepository;
 import ink.laoliang.jyuncmsplatform.repository.CategoryRepository;
 import ink.laoliang.jyuncmsplatform.repository.ResourceRepository;
-import ink.laoliang.jyuncmsplatform.config.UserRoleFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -51,6 +51,11 @@ public class CategoryServiceImpl implements CategoryService {
         // 验证用户角色权限
         if (UserRoleFields.getUserRoleLevel(USER_ROLE) <= 1) {
             throw new UserRolePermissionException("【用户角色权限异常】- 当前用户角色等级没有创建新分类目录的权限！");
+        }
+
+        // 验证 urlAlias 唯一性
+        if (categoryRepository.findById(category.getUrlAlias()).orElse(null) != null) {
+            throw new CategoryUpdateException("【分类更新异常】- 已存在的 URL 别名，请重新指定！");
         }
 
         categoryRepository.save(category);
