@@ -11,7 +11,18 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  resources:
+    static-locations: file:${custom.upload-dir}
+  mvc:
+    static-path-pattern: /${custom.upload-dir}/**
 server:
   port: 8080
   servlet:
     context-path: /
+custom:
+  upload-dir: upload_dir
+  jwt-secret-key: your_jwt_secret_key
