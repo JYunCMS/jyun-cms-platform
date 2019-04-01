@@ -4,6 +4,8 @@
 >
 > 后端服务 API 请访问：[https://documenter.getpostman.com/view/2528586/S17wPmXn](https://documenter.getpostman.com/view/2528586/S17wPmXn)
 
+![jyun-cms-web-new-article](https://github.com/JYunCMS/jyun-cms-doc/raw/master/assets/img/jyun-cms-web-new-article.gif)
+
 ## 安装部署
 
 ### 运行环境
